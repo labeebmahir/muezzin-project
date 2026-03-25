@@ -25,9 +25,9 @@ const REMINDER_MINUTES = 10
 const WINDOW_MINUTES = 5 // check window — run cron every 5 min
 
 export default async function handler(req, res) {
-  // Simple auth: only allow Vercel cron or requests with secret
-  const authHeader = req.headers['authorization']
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}` && req.headers['x-vercel-cron'] !== '1') {
+  // Simple auth via secret query param or Authorization header
+  const secret = req.query.secret || req.headers['authorization']?.replace('Bearer ', '')
+  if (secret !== process.env.CRON_SECRET) {
     return res.status(401).json({ error: 'Unauthorized' })
   }
 
