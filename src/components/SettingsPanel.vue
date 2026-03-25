@@ -13,6 +13,38 @@ const emit = defineEmits(['back', 'openLocation'])
 const { settings } = useSettings()
 const { t } = useI18n()
 
+// ── Notification permission + test ───────────────────────────────────────────
+const notifPermission = ref(typeof Notification !== 'undefined' ? Notification.permission : 'denied')
+const testSent = ref(false)
+
+async function requestNotifPermission() {
+  if (typeof Notification === 'undefined') return
+  const result = await Notification.requestPermission()
+  notifPermission.value = result
+  if (result === 'granted') settings.notificationsEnabled = true
+}
+
+function sendTestNotification() {
+  if (Notification.permission !== 'granted') {
+    requestNotifPermission()
+    return
+  }
+  new Notification('Muazzin Test', {
+    body: 'Notifications are working correctly.',
+    icon: '/icons/icon-192.png',
+    silent: false,
+  })
+  testSent.value = true
+  setTimeout(() => { testSent.value = false }, 3000)
+}
+
+function toggleNotifications() {
+  if (!settings.notificationsEnabled && Notification.permission !== 'granted') {
+    requestNotifPermission()
+  }
+  settings.notificationsEnabled = !settings.notificationsEnabled
+}
+
 // ── Sub-view navigation ─────────────────────────────────────────────────────
 const view   = ref('main') // 'main' | 'language' | 'textSize' | 'location' | 'reminder' | 'sound' | 'feedback'
 const viewTx = ref('slide-forward')
@@ -204,13 +236,45 @@ async function submitFeedback() {
         <p class="text-[11px] font-semibold uppercase tracking-widest text-muted px-1 pt-5 pb-2">{{ t.notification }}</p>
         <div class="bg-card rounded-2xl border border-(--bdr) overflow-hidden flex flex-col divide-y divide-(--bdr)">
 
-          <!-- Prayer Reminder -->
-          <button class="flex items-center gap-3 px-4 py-3.5 hover:bg-white/5 transition-colors" @click="openView('reminder')">
+          <!-- Enable Notifications toggle -->
+          <div class="flex items-center gap-3 px-4 py-3.5">
             <div class="w-9 h-9 rounded-xl bg-icon-bg border border-icon-bdr flex items-center justify-center text-gold shrink-0">
               <Bell :size="17" stroke-width="1.8" />
             </div>
-            <div class="flex-1 text-left">
+            <div class="flex-1">
               <p class="text-[15px] font-semibold text-fg">{{ t.prayerReminder }}</p>
+              <p class="text-xs" :class="notifPermission === 'granted' ? 'text-muted' : 'text-gold'">
+                {{ notifPermission === 'denied' ? 'Permission denied — enable in browser settings' : notifPermission === 'default' ? 'Tap to allow notifications' : settings.notificationsEnabled ? t.on : t.off }}
+              </p>
+            </div>
+            <button
+              class="relative w-12 h-7 rounded-full transition-colors duration-200 shrink-0"
+              :class="settings.notificationsEnabled && notifPermission === 'granted' ? 'bg-gold' : 'bg-fg/20'"
+              @click="toggleNotifications"
+            >
+              <span class="absolute top-0.5 left-0.5 w-6 h-6 bg-white rounded-full shadow-md transition-transform duration-200"
+                :class="settings.notificationsEnabled && notifPermission === 'granted' ? 'translate-x-5' : 'translate-x-0'" />
+            </button>
+          </div>
+
+          <!-- Test Notification -->
+          <button class="flex items-center gap-3 px-4 py-3.5 hover:bg-white/5 transition-colors" @click="sendTestNotification">
+            <div class="w-9 h-9 rounded-xl bg-icon-bg border border-icon-bdr flex items-center justify-center text-gold shrink-0">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="9 12 11 14 15 10"/></svg>
+            </div>
+            <div class="flex-1 text-left">
+              <p class="text-[15px] font-semibold text-fg">{{ testSent ? 'Notification sent!' : 'Test Notification' }}</p>
+              <p class="text-xs text-muted">Tap to send a test right now</p>
+            </div>
+          </button>
+
+          <!-- Reminder timing -->
+          <button class="flex items-center gap-3 px-4 py-3.5 hover:bg-white/5 transition-colors" @click="openView('reminder')">
+            <div class="w-9 h-9 rounded-xl bg-icon-bg border border-icon-bdr flex items-center justify-center text-gold shrink-0">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            </div>
+            <div class="flex-1 text-left">
+              <p class="text-[15px] font-semibold text-fg">Reminder Time</p>
               <p class="text-xs text-muted">{{ settings.reminderMinutes }} {{ t.minutesBefore }}</p>
             </div>
             <ChevronRight :size="15" class="text-muted shrink-0" />
