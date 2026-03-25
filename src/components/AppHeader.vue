@@ -1,13 +1,19 @@
 <script setup>
-import { MapPin, Calendar, Settings } from 'lucide-vue-next'
-import { ChevronDown } from 'lucide-vue-next'
+import { ref, onMounted, onUnmounted } from 'vue'
+import { MapPin, Calendar, Settings, ChevronDown } from 'lucide-vue-next'
 
 defineProps({ city: { type: String, default: '' } })
 defineEmits(['openCalendar', 'openSettings', 'openLocation'])
+
+const scrolled = ref(false)
+function onScroll() { scrolled.value = window.scrollY > 8 }
+onMounted(() => window.addEventListener('scroll', onScroll, { passive: true }))
+onUnmounted(() => window.removeEventListener('scroll', onScroll))
 </script>
 
 <template>
-  <header class="flex items-center justify-between px-4 pt-4 pb-2 sticky top-0 bg-bg z-10">
+  <header class="flex items-center justify-between px-4 pt-4 pb-2 fixed top-0 left-0 right-0 z-20 transition-all duration-200 max-w-120 mx-auto"
+    :class="scrolled ? 'backdrop-blur-md bg-bg/70 border-b border-(--bdr)' : 'bg-transparent'">
     <!-- Location (tappable) -->
     <button
       class="flex items-center gap-1.5 p-1 -ml-1 rounded-lg hover:bg-white/5 transition-colors"

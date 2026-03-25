@@ -47,7 +47,8 @@ export default async function handler(req, res) {
 
       const diff = reminderTime.getTime() - now.getTime()
       if (diff >= 0 && diff < windowMs) {
-        const result = await sendPush(zone, PRAYER_NAMES[key])
+        const timeStr = prayerTime.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })
+        const result = await sendPush(zone, PRAYER_NAMES[key], timeStr)
         sent.push({ zone, prayer: key, name: PRAYER_NAMES[key], result })
       }
     }
@@ -56,7 +57,7 @@ export default async function handler(req, res) {
   res.json({ ok: true, checked: new Date().toISOString(), sent })
 }
 
-async function sendPush(zone, prayerName) {
+async function sendPush(zone, prayerName, timeStr) {
   const res = await fetch('https://onesignal.com/api/v1/notifications', {
     method: 'POST',
     headers: {
@@ -65,8 +66,8 @@ async function sendPush(zone, prayerName) {
     },
     body: JSON.stringify({
       app_id: process.env.ONESIGNAL_APP_ID,
-      headings: { en: `🕌 ${prayerName}` },
-      contents: { en: `${prayerName} is in ${REMINDER_MINUTES} minutes` },
+      headings: { en: `${prayerName} in ${REMINDER_MINUTES} min` },
+      contents: { en: `${prayerName} prayer is at ${timeStr}.` },
       filters: [
         { field: 'tag', key: 'zone', relation: '=', value: zone },
       ],

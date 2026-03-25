@@ -172,7 +172,7 @@ function onTouchEnd(e) {
     />
 
     <!-- Home -->
-    <div v-else key="home" class="pb-8">
+    <div v-else key="home" class="pb-8 pt-14">
       <AppHeader
         :city="city"
         @open-calendar="goTo('calendar')"

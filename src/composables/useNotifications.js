@@ -94,8 +94,10 @@ export function useNotifications() {
 
   function notify(prayer) {
     if (Notification.permission !== 'granted') return
-    new Notification(`🕌 ${prayer.name}`, {
-      body: `${prayer.name} prayer time`,
+    const mins = settings.reminderMinutes ?? 10
+    const district = settings.district || 'your area'
+    new Notification(`${prayer.name} in ${mins} min`, {
+      body: `${prayer.name} prayer is at ${prayer.timeStr} in ${district}.`,
       icon: '/icons/icon-192.png',
       tag: `prayer-${prayer.key}`,
       renotify: true,
