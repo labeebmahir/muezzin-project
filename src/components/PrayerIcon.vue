@@ -1,18 +1,58 @@
 <script setup>
 defineProps({ prayerKey: { type: String, required: true }, size: { type: Number, default: 22 } })
-
-const paths = {
-  fajr:    `<path d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>`,
-  sunrise: `<path d="M12 2v2M4.93 4.93l1.41 1.41M2 12h2M19.07 4.93l-1.41 1.41M20 12h2" stroke-linecap="round"/><path d="M8 12a4 4 0 018 0" stroke-linecap="round"/><line x1="2" y1="17" x2="22" y2="17" stroke-linecap="round"/>`,
-  dhuhr:   `<circle cx="12" cy="12" r="5"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" stroke-linecap="round"/>`,
-  asr:     `<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2" stroke-linecap="round"/><path d="M3 17h18" stroke-linecap="round" stroke-dasharray="2 3"/>`,
-  maghrib: `<path d="M17 18a5 5 0 00-10 0"/><line x1="2" y1="18" x2="22" y2="18" stroke-linecap="round"/><path d="M12 2v9M4.22 10.22l1.42 1.42M18.36 11.64l1.42-1.42" stroke-linecap="round"/>`,
-  isha:    `<path d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>`,
-}
 </script>
 
 <template>
-  <svg :width="size" :height="size" viewBox="0 0 24 24" fill="none"
-    stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"
-    v-html="paths[prayerKey] || ''" />
+  <!-- Fajr -->
+  <svg v-if="prayerKey === 'fajr'" :width="size" :height="size" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <g clip-path="url(#fajr-clip)">
+      <path fill-rule="evenodd" clip-rule="evenodd" d="M24 12C24 14.1657 23.4263 16.1975 22.4225 17.9515C21.6321 17.0232 20.5898 16.3159 19.4014 15.9351C18.1308 11.9145 14.3714 8.99956 9.93066 8.99956C5.60157 8.99974 1.91951 11.7699 0.560173 15.6342C0.196311 14.4879 0 13.2669 0 12C0 5.37258 5.37258 0 12 0C18.6274 0 24 5.37258 24 12Z" fill="currentColor"/>
+      <path fill-rule="evenodd" clip-rule="evenodd" d="M9.93066 10.9996C5.64683 10.9998 2.15636 14.3963 2.00511 18.6433C2.00172 18.7385 2 18.8342 2 18.9302C2 23.3104 5.55079 26.8616 9.93066 26.8619C11.1061 26.8619 12.2192 26.6038 13.2227 26.1451L14.165 25.7144L15.0605 26.2359C15.7432 26.6333 16.5324 26.8618 17.3789 26.8619C19.9309 26.8619 22 24.7927 22 22.2408C22 21.293 21.7143 20.4108 21.2237 19.6766C20.6499 18.8177 19.7958 18.1614 18.791 17.8394L17.8057 17.524L17.4941 16.5376C16.4787 13.3247 13.4738 10.9996 9.93066 10.9996Z" fill="currentColor"/>
+    </g>
+    <defs><clipPath id="fajr-clip"><rect width="24" height="24" fill="white"/></clipPath></defs>
+  </svg>
+
+  <!-- Sunrise -->
+  <svg v-else-if="prayerKey === 'sunrise'" :width="size" :height="size" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M24 18C24 16.4241 23.6896 14.8637 23.0866 13.4078C22.4835 11.9519 21.5996 10.629 20.4853 9.51472C19.371 8.40042 18.0481 7.5165 16.5922 6.91345C15.1363 6.31039 13.5759 6 12 6C10.4241 6 8.86371 6.31039 7.4078 6.91345C5.95189 7.5165 4.62902 8.40042 3.51472 9.51472C2.40041 10.629 1.5165 11.9519 0.913445 13.4078C0.310389 14.8637 -1.37766e-07 16.4241 0 18L12 18H24Z" fill="currentColor" fill-opacity="0.5"/>
+    <path d="M19 18C19 17.0807 18.8189 16.1705 18.4672 15.3212C18.1154 14.4719 17.5998 13.7003 16.9497 13.0503C16.2997 12.4002 15.5281 11.8846 14.6788 11.5328C13.8295 11.1811 12.9193 11 12 11C11.0807 11 10.1705 11.1811 9.32122 11.5328C8.47194 11.8846 7.70026 12.4002 7.05025 13.0503C6.40024 13.7003 5.88463 14.4719 5.53284 15.3212C5.18106 16.1705 5 17.0807 5 18L12 18H19Z" fill="currentColor"/>
+  </svg>
+
+  <!-- Dhuhr / Luhar -->
+  <svg v-else-if="prayerKey === 'dhuhr'" :width="size" :height="size" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <g clip-path="url(#dhuhr-clip)">
+      <path d="M24 12C24 18.6274 18.6274 24 12 24C5.37258 24 0 18.6274 0 12C0 5.37258 5.37258 0 12 0C18.6274 0 24 5.37258 24 12Z" fill="currentColor" fill-opacity="0.5"/>
+      <path d="M19 12C19 15.866 15.866 19 12 19C8.13401 19 5 15.866 5 12C5 8.13401 8.13401 5 12 5C15.866 5 19 8.13401 19 12Z" fill="currentColor"/>
+    </g>
+    <defs><clipPath id="dhuhr-clip"><rect width="24" height="24" fill="white"/></clipPath></defs>
+  </svg>
+
+  <!-- Asr -->
+  <svg v-else-if="prayerKey === 'asr'" :width="size" :height="size" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <g clip-path="url(#asr-clip)">
+      <path fill-rule="evenodd" clip-rule="evenodd" d="M24 12C24 14.1658 23.4262 16.1976 22.4224 17.9516C21.632 17.0234 20.5898 16.3161 19.4014 15.9353C19.2078 15.3227 18.9564 14.7357 18.6536 14.1808C16.9693 11.0941 13.6947 8.99976 9.93066 8.99976C9.29449 8.99978 8.6723 9.05963 8.06939 9.17397C7.06454 9.36454 6.11328 9.7065 5.24022 10.1752C3.28935 11.2226 1.72895 12.903 0.833716 14.9416C0.734201 15.1682 0.642905 15.3992 0.560206 15.6343C0.196323 14.4879 0 13.2669 0 12C0 5.37258 5.37258 0 12 0C18.6274 0 24 5.37258 24 12Z" fill="currentColor" fill-opacity="0.5"/>
+      <path fill-rule="evenodd" clip-rule="evenodd" d="M19 12C19 12.7615 18.8784 13.4945 18.6536 14.1808C16.9693 11.0941 13.6947 8.99976 9.93066 8.99976C9.29449 8.99978 8.6723 9.05963 8.06939 9.17397C7.06454 9.36454 6.11328 9.7065 5.24022 10.1752C6.04299 7.19409 8.76527 5 12 5C15.866 5 19 8.13401 19 12Z" fill="currentColor"/>
+      <path fill-rule="evenodd" clip-rule="evenodd" d="M9.93066 10.9996C5.64683 10.9998 2.15636 14.3963 2.00511 18.6433C2.00172 18.7385 2 18.8342 2 18.9302C2 23.3104 5.55079 26.8616 9.93066 26.8619C11.1061 26.8619 12.2192 26.6038 13.2227 26.1451L14.165 25.7144L15.0605 26.2359C15.7432 26.6333 16.5324 26.8618 17.3789 26.8619C19.9309 26.8619 22 24.7927 22 22.2408C22 21.293 21.7143 20.4108 21.2237 19.6766C20.6499 18.8177 19.7958 18.1614 18.791 17.8394L17.8057 17.524L17.4941 16.5376C16.4787 13.3247 13.4738 10.9996 9.93066 10.9996Z" fill="currentColor"/>
+    </g>
+    <defs><clipPath id="asr-clip"><rect width="24" height="24" fill="white"/></clipPath></defs>
+  </svg>
+
+  <!-- Maghrib -->
+  <svg v-else-if="prayerKey === 'maghrib'" :width="size" :height="size" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M24 18C24 16.4241 23.6896 14.8637 23.0866 13.4078C22.4835 11.9519 21.5996 10.629 20.4853 9.51472C19.371 8.40042 18.0481 7.5165 16.5922 6.91345C15.1363 6.31039 13.5759 6 12 6C10.4241 6 8.86371 6.31039 7.4078 6.91345C5.95189 7.5165 4.62902 8.40042 3.51472 9.51472C2.40041 10.629 1.5165 11.9519 0.913445 13.4078C0.310389 14.8637 -1.37766e-07 16.4241 0 18L12 18H24Z" fill="currentColor" fill-opacity="0.5"/>
+    <path d="M19 18C19 17.0807 18.8189 16.1705 18.4672 15.3212C18.1154 14.4719 17.5998 13.7003 16.9497 13.0503C16.2997 12.4002 15.5281 11.8846 14.6788 11.5328C13.8295 11.1811 12.9193 11 12 11C11.0807 11 10.1705 11.1811 9.32122 11.5328C8.47194 11.8846 7.70026 12.4002 7.05025 13.0503C6.40024 13.7003 5.88463 14.4719 5.53284 15.3212C5.18106 16.1705 5 17.0807 5 18L12 18H19Z" fill="currentColor"/>
+  </svg>
+
+  <!-- Isha -->
+  <svg v-else-if="prayerKey === 'isha'" :width="size" :height="size" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <g clip-path="url(#isha-clip)">
+      <path d="M24 12C24 18.6274 18.6274 24 12 24C5.37258 24 0 18.6274 0 12C0 5.37258 5.37258 0 12 0C18.6274 0 24 5.37258 24 12Z" fill="currentColor"/>
+    </g>
+    <defs><clipPath id="isha-clip"><rect width="24" height="24" fill="white"/></clipPath></defs>
+  </svg>
+
+  <!-- Fallback -->
+  <svg v-else :width="size" :height="size" viewBox="0 0 24 24" fill="currentColor">
+    <circle cx="12" cy="12" r="5"/>
+  </svg>
 </template>
