@@ -12,44 +12,94 @@ export function useNotifications() {
     }
   }
 
-  function schedulePrayers(prayers) {
+  // Send scheduled prayers to the service worker (fires even when app is closed)
+  async function scheduleViaSW(prayers, offsetMs) {
+    if (!('serviceWorker' in navigator)) return false
+    try {
+      const reg = await navigator.serviceWorker.ready
+      if (!reg.active) return false
+
+      // Check if the browser supports TimestampTrigger (Chrome Android)
+      const supportsTimestampTrigger = 'TimestampTrigger' in window
+
+      const payload = prayers
+        .filter((p) => p.hasIqama)
+        .map((p) => ({
+          key: p.key,
+          name: p.name,
+          hasIqama: p.hasIqama,
+          fireAt: p.time.getTime() - offsetMs,
+        }))
+
+      reg.active.postMessage({
+        type: 'SCHEDULE_NOTIFICATIONS',
+        prayers: payload,
+        offsetMs,
+        silent: settings.reminderSound === 'silent',
+      })
+
+      return supportsTimestampTrigger // true = background scheduling available
+    } catch {
+      return false
+    }
+  }
+
+  // setTimeout fallback — fires only while app/tab is open
+  function scheduleViaTimeout(prayers, offsetMs) {
     timeouts.forEach((t) => clearTimeout(t))
     timeouts = []
 
-    if (!settings.notificationsEnabled) return
-
     const now = Date.now()
-    const offsetMs = (settings.reminderMinutes ?? 10) * 60_000
 
     prayers.forEach((prayer) => {
-      if (!prayer.hasIqama) return // skip Sunrise
+      if (!prayer.hasIqama) return
 
       const fireAt = prayer.time.getTime() - offsetMs
-      const delay  = fireAt - now
+      const delay = fireAt - now
 
       if (delay > 0 && delay < 86_400_000) {
         const t = setTimeout(() => {
           notify(prayer)
-          if (settings.reminderSound === 'azan') {
-            playAdhan(prayer.key)
-          }
-          // 'default' → notification plays system sound (silent: false)
-          // 'silent'  → notification is silent (already handled in notify())
+          if (settings.reminderSound === 'azan') playAdhan(prayer.key)
         }, delay)
         timeouts.push(t)
       }
     })
   }
 
+  async function schedulePrayers(prayers) {
+    if (!settings.notificationsEnabled) {
+      // Clear any previously scheduled notifications
+      timeouts.forEach((t) => clearTimeout(t))
+      timeouts = []
+      const reg = await navigator.serviceWorker?.ready.catch(() => null)
+      reg?.active?.postMessage({ type: 'CLEAR_NOTIFICATIONS' })
+      return
+    }
+
+    if (Notification.permission !== 'granted') return
+
+    const offsetMs = (settings.reminderMinutes ?? 10) * 60_000
+
+    // Try service worker background scheduling first
+    const swBackground = await scheduleViaSW(prayers, offsetMs)
+
+    // Always keep setTimeout as fallback (works when app is open)
+    scheduleViaTimeout(prayers, offsetMs)
+
+    if (!swBackground) {
+      console.info('[Muazzin] Background notifications not supported on this browser. Notifications will only fire while the app is open.')
+    }
+  }
+
   function notify(prayer) {
     if (Notification.permission !== 'granted') return
-    const isSilent = settings.reminderSound === 'silent'
-    new Notification(`Time for ${prayer.name}`, {
-      body: prayer.iqamaStr ? `Iqama at ${prayer.iqamaStr}` : '',
+    new Notification(`🕌 ${prayer.name}`, {
+      body: `${prayer.name} prayer time`,
       icon: '/icons/icon-192.png',
-      tag: prayer.key,
+      tag: `prayer-${prayer.key}`,
       renotify: true,
-      silent: isSilent,
+      silent: settings.reminderSound === 'silent',
     })
   }
 
