@@ -31,17 +31,17 @@ const displayName = computed(() =>
     <!-- Left: icon + name -->
     <div class="flex items-center gap-3">
       <div class="w-8 h-8 flex items-center justify-center shrink-0"
-        :class="isNext ? 'text-nt' : 'text-muted'">
+        :class="isNext ? 'text-white' : 'text-muted'">
         <PrayerIcon :prayer-key="prayer.key" :size="22" />
       </div>
 
       <div class="flex flex-col leading-tight">
         <span v-if="isNext"
-          class="text-[10px] font-semibold tracking-wide uppercase opacity-75 text-nt">
+          class="text-[10px] font-semibold tracking-wide uppercase opacity-75 text-white">
           {{ t.next }}
         </span>
         <span class="text-base font-semibold"
-          :class="isNext ? 'text-nt' : 'text-fg'">
+          :class="isNext ? 'text-white' : 'text-fg'">
           {{ displayName }}
         </span>
       </div>
@@ -49,7 +49,7 @@ const displayName = computed(() =>
 
     <!-- Right: time -->
     <span class="text-[15px] font-semibold"
-      :class="isNext ? 'text-nt' : 'text-fg'">
+      :class="isNext ? 'text-white' : 'text-fg'">
       {{ prayer.timeStr }}
     </span>
   </div>
