@@ -57,6 +57,9 @@ body {
   min-height: 100dvh;
   position: relative;
   overflow-x: hidden;
+  /* PWA status bar safe area */
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
 }
 
 button {

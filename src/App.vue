@@ -113,13 +113,34 @@ onMounted(async () => {
 })
 
 onUnmounted(() => stopTimer())
+
+// ── Swipe-back gesture ─────────────────────────────────────────────────────
+
+let touchStartX = 0
+let touchStartY = 0
+
+function onTouchStart(e) {
+  touchStartX = e.touches[0].clientX
+  touchStartY = e.touches[0].clientY
+}
+
+function onTouchEnd(e) {
+  if (subView.value === 'home') return
+  const dx = e.changedTouches[0].clientX - touchStartX
+  const dy = Math.abs(e.changedTouches[0].clientY - touchStartY)
+  // Right swipe: horizontal ≥ 60px, more horizontal than vertical
+  if (dx >= 60 && dy < dx * 0.8) goBack()
+}
 </script>
 
 <template>
   <!-- Onboarding -->
   <OnboardingSheet />
 
-  <div class="relative overflow-x-hidden min-h-screen">
+  <div class="relative overflow-x-hidden min-h-screen"
+    @touchstart.passive="onTouchStart"
+    @touchend.passive="onTouchEnd"
+  >
   <Transition :name="pageTx">
     <!-- Calendar view -->
     <CalendarView
