@@ -476,6 +476,28 @@ async function submitFeedback() {
 </template>
 
 <style scoped>
+/* Sub-view slide transitions */
+.slide-forward-enter-active,
+.slide-forward-leave-active,
+.slide-back-enter-active,
+.slide-back-leave-active {
+  transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1),
+              opacity   0.28s cubic-bezier(0.4, 0, 0.2, 1);
+  position: absolute;
+  width: 100%;
+  top: 0; left: 0;
+}
+.slide-forward-enter-from  { transform: translateX(100%); opacity: 0; }
+.slide-forward-enter-to    { transform: translateX(0);    opacity: 1; }
+.slide-forward-leave-from  { transform: translateX(0);    opacity: 1; }
+.slide-forward-leave-to    { transform: translateX(-30%); opacity: 0; }
+
+.slide-back-enter-from  { transform: translateX(-30%); opacity: 0; }
+.slide-back-enter-to    { transform: translateX(0);    opacity: 1; }
+.slide-back-leave-from  { transform: translateX(0);    opacity: 1; }
+.slide-back-leave-to    { transform: translateX(100%); opacity: 0; }
+
+/* Toast */
 .fade-up-enter-active, .fade-up-leave-active {
   transition: opacity 0.3s ease, transform 0.3s ease;
 }

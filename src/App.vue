@@ -119,6 +119,7 @@ onUnmounted(() => stopTimer())
   <!-- Onboarding -->
   <OnboardingSheet />
 
+  <div class="relative overflow-x-hidden min-h-screen">
   <Transition :name="pageTx">
     <!-- Calendar view -->
     <CalendarView
@@ -176,4 +177,31 @@ onUnmounted(() => stopTimer())
     </div>
   </div>
   </Transition>
+  </div>
 </template>
+
+<style>
+/* ── App-level page transitions ─────────────────────────────── */
+.slide-forward-enter-active,
+.slide-forward-leave-active,
+.slide-back-enter-active,
+.slide-back-leave-active {
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              opacity   0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: absolute;
+  width: 100%;
+  top: 0; left: 0;
+}
+
+/* Forward: new slides in from right, old exits to left */
+.slide-forward-enter-from  { transform: translateX(100%); opacity: 0; }
+.slide-forward-enter-to    { transform: translateX(0);    opacity: 1; }
+.slide-forward-leave-from  { transform: translateX(0);    opacity: 1; }
+.slide-forward-leave-to    { transform: translateX(-30%); opacity: 0; }
+
+/* Back: new slides in from left, old exits to right */
+.slide-back-enter-from  { transform: translateX(-30%); opacity: 0; }
+.slide-back-enter-to    { transform: translateX(0);    opacity: 1; }
+.slide-back-leave-from  { transform: translateX(0);    opacity: 1; }
+.slide-back-leave-to    { transform: translateX(100%); opacity: 0; }
+</style>
