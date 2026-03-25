@@ -2,6 +2,7 @@
 import { ref, onMounted } from 'vue'
 import { Bell, MapPin } from 'lucide-vue-next'
 import { useI18n } from '../composables/useI18n.js'
+import { requestOneSignalPermission } from '../composables/useOneSignal.js'
 
 const { t } = useI18n()
 
@@ -55,7 +56,7 @@ onMounted(() => {
 // ── Actions ──────────────────────────────────────────────────────────────────
 
 async function allowNotification() {
-  await Notification.requestPermission()
+  await requestOneSignalPermission()
   nextStep('notification')
 }
 

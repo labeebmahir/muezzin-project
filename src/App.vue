@@ -9,6 +9,7 @@ import LocationPage from './components/LocationPage.vue'
 import SettingsPanel from './components/SettingsPanel.vue'
 import OnboardingSheet from './components/OnboardingSheet.vue'
 import { useLocation } from './composables/useLocation.js'
+import { initOneSignal, tagZone } from './composables/useOneSignal.js'
 import { usePrayerTimes } from './composables/usePrayerTimes.js'
 import { useNotifications } from './composables/useNotifications.js'
 import { usePrayerData } from './composables/usePrayerData.js'
@@ -100,6 +101,9 @@ watch(() => settings.textSize, applyTextSize)
 
 // ── Lifecycle ──────────────────────────────────────────────────────────────
 
+// Tag zone in OneSignal whenever it changes (so server knows who to notify)
+watch(() => settings.zone, (zone) => tagZone(zone), { immediate: false })
+
 onMounted(async () => {
   applyTheme()
   applyTextSize()
@@ -110,6 +114,9 @@ onMounted(async () => {
     settings.district = detectedDistrict.value
   }
   startTimer()
+  // Init OneSignal after app is ready
+  await initOneSignal()
+  tagZone(settings.zone)
 })
 
 onUnmounted(() => stopTimer())
