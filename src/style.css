@@ -1,0 +1,112 @@
+@import "tailwindcss";
+
+/* ── Design tokens (dark default) ───────────────────────────────────── */
+:root {
+  --bg:      #111612;
+  --card:    #0B3124;
+  --bdr:     rgba(255,255,255,0.08);
+  --fg:      #FFFFFF;
+  --muted:   #8aab9e;
+  --gold:    #C6AA57;
+  --next:    #C6AA57;
+  --nt:      #111612;
+  --icon-bg: rgba(198,170,87,0.12);
+  --icon-bdr:rgba(198,170,87,0.22);
+}
+
+:root.light {
+  --bg:      #F0F4F8;
+  --card:    #FFFFFF;
+  --bdr:     rgba(0,0,0,0.08);
+  --fg:      #111612;
+  --muted:   #64748b;
+  --gold:    #C6AA57;
+  --next:    #C6AA57;
+  --nt:      #111612;
+  --icon-bg: rgba(11,49,36,0.08);
+  --icon-bdr:rgba(11,49,36,0.15);
+}
+
+/* ── Tailwind color aliases (runtime CSS-var mapping) ────────────────── */
+@theme inline {
+  --color-bg:       var(--bg);
+  --color-card:     var(--card);
+  --color-fg:       var(--fg);
+  --color-muted:    var(--muted);
+  --color-gold:     var(--gold);
+  --color-next:     var(--next);
+  --color-nt:       var(--nt);
+  --color-icon-bg:  var(--icon-bg);
+  --color-icon-bdr: var(--icon-bdr);
+  --font-family-sans: 'Poppins', ui-sans-serif, system-ui, sans-serif;
+}
+
+/* ── Base ────────────────────────────────────────────────────────────── */
+body {
+  background-color: var(--bg);
+  color: var(--fg);
+  font-family: 'Poppins', ui-sans-serif, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  min-height: 100dvh;
+}
+
+#app {
+  max-width: 480px;
+  margin: 0 auto;
+  min-height: 100dvh;
+  position: relative;
+  overflow-x: hidden;
+}
+
+button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: inherit;
+  font-family: inherit;
+}
+
+/* Text size scale — zoom scales all children including fixed px values */
+[data-text-size="small"]  { zoom: 0.875; }
+[data-text-size="normal"] { zoom: 1; }
+[data-text-size="large"]  { zoom: 1.125; }
+
+/* Select option theming */
+select option {
+  background-color: var(--card);
+  color: var(--fg);
+}
+
+/* ── Page slide transitions ──────────────────────────────────────────── */
+.slide-forward-enter-active,
+.slide-forward-leave-active,
+.slide-back-enter-active,
+.slide-back-leave-active {
+  transition: transform 0.32s cubic-bezier(0.32, 0.72, 0, 1), opacity 0.32s ease;
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  min-height: 100dvh;
+}
+
+/* Forward: enter from right, leave to left */
+.slide-forward-enter-from { transform: translateX(100%); opacity: 0; }
+.slide-forward-leave-to   { transform: translateX(-25%); opacity: 0; }
+
+/* Back: enter from left, leave to right */
+.slide-back-enter-from { transform: translateX(-100%); opacity: 0; }
+.slide-back-leave-to   { transform: translateX(25%);  opacity: 0; }
+
+/* ── Hero card keyframes (can't express custom keyframes in Tailwind) ── */
+@keyframes pulse-ring {
+  0%, 100% { transform: scale(1);    opacity: 1;   }
+  50%       { transform: scale(1.1); opacity: 0.5; }
+}
+@keyframes twinkle {
+  0%, 100% { opacity: 0.6; transform: scale(1);   }
+  50%       { opacity: 0.2; transform: scale(0.7); }
+}
+
+.animate-pulse-ring        { animation: pulse-ring 2.6s ease-in-out infinite; }
+.animate-pulse-ring-delay  { animation: pulse-ring 2.6s ease-in-out infinite 0.35s; }
+.animate-twinkle           { animation: twinkle   3s   ease-in-out infinite; }

@@ -1,0 +1,15 @@
+[
+  { "zone": "01", "name": "Zone 01", "districts": ["Colombo", "Gampaha", "Kalutara"] },
+  { "zone": "02", "name": "Zone 02", "districts": ["Jaffna", "Nallur"] },
+  { "zone": "03", "name": "Zone 03", "districts": ["Mullaitivu", "Kilinochchi", "Vavuniya"] },
+  { "zone": "04", "name": "Zone 04", "districts": ["Mannar", "Puttalam"] },
+  { "zone": "05", "name": "Zone 05", "districts": ["Anuradhapura", "Polonnaruwa"] },
+  { "zone": "06", "name": "Zone 06", "districts": ["Kurunegala"] },
+  { "zone": "07", "name": "Zone 07", "districts": ["Kandy", "Matale", "Nuwara Eliya"] },
+  { "zone": "08", "name": "Zone 08", "districts": ["Batticaloa", "Ampara"] },
+  { "zone": "09", "name": "Zone 09", "districts": ["Trincomalee"] },
+  { "zone": "10", "name": "Zone 10", "districts": ["Badulla", "Monaragala", "Dehiaththakandiya", "Padiyatalawa"] },
+  { "zone": "11", "name": "Zone 11", "districts": ["Ratnapura", "Kegalle"] },
+  { "zone": "12", "name": "Zone 12", "districts": ["Galle", "Matara"] },
+  { "zone": "13", "name": "Zone 13", "districts": ["Hambantota"] }
+]
