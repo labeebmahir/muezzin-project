@@ -6,6 +6,7 @@ import PrayerIcon from './PrayerIcon.vue'
 import { useSettings } from '../composables/useSettings.js'
 import { useI18n } from '../composables/useI18n.js'
 import { PRAYER_NAMES } from '../constants/prayerNames.js'
+import { shareAsImage } from '../composables/useShareImage.js'
 
 const props = defineProps({ coords: { type: Object, default: null } })
 defineEmits(['back'])
@@ -117,6 +118,16 @@ const nextIdx = computed(() => {
 
 const selHijri = computed(() => { const { day, year } = hijriParts(selectedDate.value); return `${day} ${hijriMonthName(selectedDate.value, langPrefix.value)} ${year}` })
 const selGreg  = computed(() => selectedDate.value.toLocaleDateString(locale.value, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }))
+
+async function share() {
+  await shareAsImage({
+    prayers:       selPrayers.value,
+    hijriDate:     selHijri.value,
+    gregorianDate: selGreg.value,
+    city:          settings.district || '',
+    language:      settings.language,
+  })
+}
 </script>
 
 <template>
@@ -167,11 +178,11 @@ const selGreg  = computed(() => selectedDate.value.toLocaleDateString(locale.val
           >
             <template v-if="day">
               <span class="text-base font-semibold leading-none"
-                :class="day.isToday ? 'text-nt font-extrabold' : 'text-fg'">
+                :class="day.isToday ? 'text-white font-extrabold' : 'text-fg'">
                 {{ day.hijriDay }}
               </span>
               <span class="text-[9px] leading-none"
-                :class="day.isToday ? 'text-nt/70' : 'text-muted'">
+                :class="day.isToday ? 'text-white/70' : 'text-muted'">
                 {{ day.gregShort }}
               </span>
             </template>
@@ -185,7 +196,7 @@ const selGreg  = computed(() => selectedDate.value.toLocaleDateString(locale.val
           <p class="text-[15px] font-semibold text-gold">{{ selHijri }}</p>
           <p class="text-sm text-muted mt-0.5">{{ selGreg }}</p>
         </div>
-        <button class="p-2 rounded-lg text-muted hover:text-fg transition-colors" aria-label="Share">
+        <button class="p-2 rounded-lg text-muted hover:text-fg transition-colors" aria-label="Share" @click="share">
           <Share2 :size="20" stroke-width="1.8" />
         </button>
       </div>
@@ -196,12 +207,14 @@ const selGreg  = computed(() => selectedDate.value.toLocaleDateString(locale.val
           v-for="(p, i) in selPrayers" :key="p.key"
           class="flex flex-col items-center gap-1.5 py-3.5 px-2 rounded-2xl border"
           :class="i === nextIdx
-            ? 'bg-next border-transparent text-nt'
-            : 'bg-card border-(--bdr) text-muted'"
+            ? 'bg-next border-transparent'
+            : 'bg-card border-(--bdr)'"
         >
-          <PrayerIcon :prayer-key="p.key" :size="22" />
-          <span class="text-[13px] font-semibold" :class="i === nextIdx ? 'text-nt' : 'text-fg'">{{ p.name }}</span>
-          <span class="text-sm font-extrabold"    :class="i === nextIdx ? 'text-nt' : 'text-fg'">{{ p.timeStr }}</span>
+          <div :class="i === nextIdx ? 'text-white' : 'text-gold'">
+            <PrayerIcon :prayer-key="p.key" :size="22" />
+          </div>
+          <span class="text-[13px] font-semibold" :class="i === nextIdx ? 'text-white' : 'text-fg'">{{ p.name }}</span>
+          <span class="text-sm font-extrabold"     :class="i === nextIdx ? 'text-white' : 'text-fg'">{{ p.timeStr }}</span>
         </div>
       </div>
     </div>
