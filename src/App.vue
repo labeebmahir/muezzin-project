@@ -178,7 +178,7 @@ function onTouchEnd(e) {
     />
 
     <!-- Home -->
-    <div v-else key="home" class="pb-8 flex flex-col gap-6" style="padding-top: calc(env(safe-area-inset-top) + 3.5rem)">
+    <div v-else key="home" class="pb-8 flex flex-col gap-6 page-content">
       <AppHeader
         :city="settings.district || city"
         @open-calendar="goTo('calendar')"

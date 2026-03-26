@@ -86,9 +86,16 @@ select option {
   color: var(--fg);
 }
 
-/* Push page content below fixed PageHeader (safe-area + header height) */
-.page-content {
-  padding-top: calc(env(safe-area-inset-top) + 3.5rem);
+/* Fixed header top padding */
+.app-header-pt { padding-top: 0.75rem; }
+
+/* Push page content below fixed header */
+.page-content { padding-top: 3.5rem; }
+
+/* In standalone PWA (added to home screen), add safe area on top */
+@media (display-mode: standalone) {
+  .app-header-pt { padding-top: calc(env(safe-area-inset-top) + 0.25rem); }
+  .page-content  { padding-top: calc(env(safe-area-inset-top) + 3rem); }
 }
 
 /* ── Page slide transitions ──────────────────────────────────────────── */

@@ -12,8 +12,7 @@ onUnmounted(() => window.removeEventListener('scroll', onScroll))
 </script>
 
 <template>
-  <header class="flex items-center justify-between px-4 pb-2 fixed top-0 left-0 right-0 z-20 transition-all duration-200 max-w-120 mx-auto"
-    style="padding-top: calc(env(safe-area-inset-top) + 0.5rem)"
+  <header class="flex items-center justify-between px-4 pb-2 fixed top-0 left-0 right-0 z-20 transition-all duration-200 max-w-120 mx-auto app-header-pt"
     :class="scrolled ? 'backdrop-blur-md bg-bg/70' : 'bg-transparent'">
     <!-- Location (tappable) -->
     <button

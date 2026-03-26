@@ -31,24 +31,26 @@ export async function initOneSignal() {
 }
 
 export async function requestOneSignalPermission() {
-  // Try OneSignal first
+  // On iOS the gesture context is lost after any async op, so request native first
+  let granted = false
+  try {
+    if (typeof Notification !== 'undefined' && Notification.permission === 'default') {
+      const result = await Notification.requestPermission()
+      granted = result === 'granted'
+    } else {
+      granted = Notification?.permission === 'granted'
+    }
+  } catch {}
+
+  // Then let OneSignal sync its state (non-blocking)
   try {
     const OneSignal = window.OneSignal
     if (OneSignal?.Notifications) {
       await OneSignal.Notifications.requestPermission()
-      return OneSignal.Notifications.permission
     }
   } catch {}
 
-  // Fallback: native browser permission (works on iOS PWA 16.4+)
-  try {
-    if (typeof Notification !== 'undefined') {
-      const result = await Notification.requestPermission()
-      return result === 'granted'
-    }
-  } catch {}
-
-  return false
+  return granted
 }
 
 export async function tagZone(zone) {

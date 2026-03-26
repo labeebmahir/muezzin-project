@@ -1,7 +1,6 @@
 <template>
   <header
-    class="flex items-center justify-center px-4 pb-3 fixed top-0 left-0 right-0 z-20 transition-all duration-200 max-w-120 mx-auto"
-    style="padding-top: calc(env(safe-area-inset-top) + 0.5rem)"
+    class="flex items-center justify-center px-4 pb-3 fixed top-0 left-0 right-0 z-20 transition-all duration-200 max-w-120 mx-auto app-header-pt"
     :class="scrolled ? 'backdrop-blur-md bg-bg/80' : 'bg-transparent'"
   >
     <button
