@@ -13,8 +13,8 @@ const { t } = useI18n()
 const THEMES = {
   fajr:    { gradient: 'linear-gradient(180deg,#1c1a4b 0%,#3d3585 100%)', sun: '#c9c0e8', ring: 'rgba(201,192,232,0.2)', size: 64, moon: true,  bottom: false, stars: true  },
   sunrise: { gradient: 'linear-gradient(180deg,#7ec8e3 0%,#f5c97a 100%)', sun: '#f9c74f', ring: 'rgba(249,199,79,0.28)', size: 72, moon: false, bottom: true,  stars: false },
-  dhuhr:   { gradient: 'linear-gradient(180deg,#87ceeb 0%,#4a90d9 100%)', sun: '#f9c74f', ring: 'rgba(249,199,79,0.24)', size: 84, moon: false, bottom: false, stars: false },
-  asr:     { gradient: 'linear-gradient(180deg,#4b8fbd 0%,#1d5c7a 100%)', sun: '#f9c74f', ring: 'rgba(249,199,79,0.2)',  size: 64, moon: false, bottom: false, stars: false },
+  dhuhr:   { gradient: 'linear-gradient(180deg,#0295DA 0%,#CEE5FF 100%)', sun: '#f9c74f', ring: 'rgba(249,199,79,0.24)', size: 84, moon: false, bottom: false, stars: false },
+  asr:     { gradient: 'linear-gradient(180deg,#2BA1DA 0%,#FFFFFF 100%)', sun: '#f9c74f', ring: 'rgba(249,199,79,0.2)',  size: 64, moon: false, bottom: false, stars: false },
   maghrib: { gradient: 'linear-gradient(180deg,#f4845f 0%,#9b1b2f 100%)', sun: '#f9c74f', ring: 'rgba(249,199,79,0.28)', size: 72, moon: false, bottom: true,  stars: false },
   isha:    { gradient: 'linear-gradient(180deg,#060c1e 0%,#0d1a3a 100%)', sun: '#e8d5a3', ring: 'rgba(232,213,163,0.15)',size: 60, moon: true,  bottom: false, stars: true  },
 }

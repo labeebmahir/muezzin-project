@@ -1,7 +1,8 @@
 <script setup>
 import { ref, computed } from 'vue'
-import { Search, X, Navigation, Check } from 'lucide-vue-next'
+import { Search, X } from 'lucide-vue-next'
 import PageHeader from './PageHeader.vue'
+import SelectOption from './SelectOption.vue'
 import { useSettings } from '../composables/useSettings.js'
 import { useI18n } from '../composables/useI18n.js'
 import ZONES from '../data/zones.json'
@@ -13,15 +14,23 @@ const { t } = useI18n()
 const query = ref('')
 
 const allDistricts = ZONES
-  .flatMap(z => z.districts.map(d => ({ district: d, zone: z.zone })))
-  .sort((a, b) => a.district.localeCompare(b.district))
+  .flatMap(z => z.districts.map(d => ({ ...d, zone: z.zone })))
+  .sort((a, b) => a.en.localeCompare(b.en))
 
 const filtered = computed(() => {
   const q = query.value.toLowerCase().trim()
-  return q ? allDistricts.filter(d => d.district.toLowerCase().includes(q)) : allDistricts
+  const lang = settings.language ?? 'en'
+  return q
+    ? allDistricts.filter(d =>
+        d.en.toLowerCase().includes(q) ||
+        (d[lang] ?? '').toLowerCase().includes(q)
+      )
+    : allDistricts
 })
 
-const isAutoSelected = computed(() => settings.locationMode === 'auto')
+function localName(d) {
+  return d[settings.language ?? 'en'] ?? d.en
+}
 
 function selectAuto() {
   settings.locationMode = 'auto'
@@ -30,17 +39,16 @@ function selectAuto() {
 function selectDistrict(item) {
   settings.locationMode = 'manual'
   settings.zone = item.zone
-  settings.district = item.district
+  settings.district = item.en  // always store English key
   query.value = ''
 }
 </script>
 
 <template>
-  <div class="min-h-screen pb-10">
-    <!-- Header -->
+  <div class="min-h-screen pb-10 page-content">
     <PageHeader :title="t.location" @back="$emit('back')" />
 
-    <div class="flex flex-col gap-4 px-4 pt-16">
+    <div class="flex flex-col gap-4 px-4">
       <!-- Search bar -->
       <div class="relative">
         <Search :size="18" class="absolute left-4 top-1/2 -translate-y-1/2 text-muted pointer-events-none" />
@@ -58,42 +66,20 @@ function selectDistrict(item) {
 
       <div class="flex flex-col gap-2">
         <!-- Auto option (hidden while searching) -->
-        <button
+        <SelectOption
           v-if="!query"
-          class="flex items-center gap-3 px-4 py-4 rounded-xl transition-colors text-left"
-          :class="isAutoSelected ? 'bg-gold' : 'bg-card hover:bg-white/5'"
-          @click="selectAuto"
-        >
-          <Navigation :size="18" stroke-width="1.5"
-            :class="isAutoSelected ? 'text-nt' : 'text-muted'" />
-          <span class="flex-1 text-sm font-semibold"
-            :class="isAutoSelected ? 'text-nt' : 'text-fg'">Auto</span>
-          <!-- Circle check -->
-          <span v-if="isAutoSelected"
-            class="w-7 h-7 rounded-full bg-card flex items-center justify-center shrink-0">
-            <Check :size="14" stroke-width="3" class="text-white" />
-          </span>
-        </button>
+          :label="t.locationAuto"
+          :selected="settings.locationMode === 'auto'"
+          @select="selectAuto"
+        />
 
         <!-- District list -->
-        <button
-          v-for="item in filtered" :key="item.district"
-          class="flex items-center justify-between px-4 py-4 rounded-xl transition-colors text-left"
-          :class="settings.locationMode === 'manual' && settings.district === item.district
-            ? 'bg-gold'
-            : 'bg-card  hover:bg-white/5'"
-          @click="selectDistrict(item)"
-        >
-          <span class="text-sm font-semibold"
-            :class="settings.locationMode === 'manual' && settings.district === item.district
-              ? 'text-nt' : 'text-fg'">
-            {{ item.district }}
-          </span>
-          <span v-if="settings.locationMode === 'manual' && settings.district === item.district"
-            class="w-7 h-7 rounded-full bg-card flex items-center justify-center shrink-0">
-            <Check :size="14" stroke-width="3" class="text-white" />
-          </span>
-        </button>
+        <SelectOption
+          v-for="item in filtered" :key="item.en"
+          :label="localName(item)"
+          :selected="settings.locationMode === 'manual' && settings.district === item.en"
+          @select="selectDistrict(item)"
+        />
       </div>
     </div>
   </div>

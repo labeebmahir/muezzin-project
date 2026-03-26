@@ -1,18 +1,17 @@
 <script setup>
 import { ref, computed } from 'vue'
 import {
-  ChevronRight, Check, MinusCircle, PlusCircle, CheckCircle2,
+  ChevronRight, MinusCircle, PlusCircle, CheckCircle2,
   Languages, Type, Moon, BellRing, ClockPlus, MessageSquareText,
-  MoonStar, Navigation, Search, X, MapPin,
+  MoonStar, MapPin, ChevronDown,
 } from 'lucide-vue-next'
 import PageHeader from './PageHeader.vue'
 import SettingsRow from './SettingsRow.vue'
 import SelectOption from './SelectOption.vue'
 import { useSettings } from '../composables/useSettings.js'
 import { useI18n } from '../composables/useI18n.js'
-import ZONES from '../data/zones.json'
 
-const emit = defineEmits(['back', 'openLocation'])
+const emit = defineEmits(['back', 'open-location'])
 const { settings } = useSettings()
 const { t } = useI18n()
 
@@ -35,7 +34,7 @@ function toggleNotifications() {
 }
 
 // ── Sub-view navigation ─────────────────────────────────────────────────────
-const view   = ref('main') // 'main' | 'language' | 'textSize' | 'location' | 'reminder' | 'sound' | 'feedback'
+const view   = ref('main') // 'main' | 'language' | 'textSize' | 'reminder' | 'sound' | 'feedback'
 const viewTx = ref('slide-forward')
 
 function openView(v) { viewTx.value = 'slide-forward'; view.value = v }
@@ -45,32 +44,10 @@ function backToMain() { viewTx.value = 'slide-back';  view.value = 'main' }
 const LANGUAGES  = [{ code: 'en', label: 'English' }, { code: 'ta', label: 'தமிழ்' }, { code: 'si', label: 'සිංහල' }]
 const REMINDERS  = [5, 10, 15, 20, 30]
 
-// ── Location sub-view ───────────────────────────────────────────────────────
-const locationSearch = ref('')
-const allDistricts = ZONES
-  .flatMap(z => z.districts.map(d => ({ district: d, zone: z.zone })))
-  .sort((a, b) => a.district.localeCompare(b.district))
-
-const filteredDistricts = computed(() => {
-  const q = locationSearch.value.toLowerCase().trim()
-  return q ? allDistricts.filter(d => d.district.toLowerCase().includes(q)) : allDistricts
-})
-
-function selectDistrict(item) {
-  settings.locationMode = 'manual'
-  settings.zone = item.zone
-  settings.district = item.district
-  locationSearch.value = ''
-}
-
-function selectGPS() {
-  settings.locationMode = 'auto'
-}
-
 // ── Labels ──────────────────────────────────────────────────────────────────
 const langLabel  = computed(() => LANGUAGES.find(l => l.code === settings.language)?.label ?? 'English')
 const sizeLabel  = computed(() => {
-  const map = { large: t.value.textSizeLarge, normal: t.value.textSizeNormal, small: t.value.textSizeSmall }
+  const map = { normal: t.value.textSizeNormal, large: t.value.textSizeLarge, xlarge: t.value.textSizeXLarge }
   return map[settings.textSize ?? 'normal'] ?? t.value.textSizeNormal
 })
 const soundLabel = computed(() => {
@@ -110,8 +87,8 @@ async function submitFeedback() {
       headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
       body: JSON.stringify({
         access_key: WEB3FORMS_KEY,
-        subject:    `Muazzin Feedback – ${feedbackType.value.charAt(0).toUpperCase() + feedbackType.value.slice(1)}`,
-        from_name:  'Muazzin App',
+        subject:    `MuezzinFeedback – ${feedbackType.value.charAt(0).toUpperCase() + feedbackType.value.slice(1)}`,
+        from_name:  'MuezzinApp',
         message:    `Type: ${feedbackType.value.charAt(0).toUpperCase() + feedbackType.value.slice(1)}\n\n${feedbackText.value}`,
       }),
     })
@@ -136,10 +113,10 @@ async function submitFeedback() {
   <Transition :name="viewTx">
 
     <!-- ════════════════════ MAIN ════════════════════ -->
-    <div v-if="view === 'main'" key="main" class="min-h-screen">
+    <div v-if="view === 'main'" key="main" class="min-h-screen page-content">
       <PageHeader :title="t.settingsTitle" @back="emit('back')" />
 
-      <div class="flex flex-col px-4 pt-16 pb-12">
+      <div class="flex flex-col px-4 pb-12">
 
         <!-- GENERAL -->
         <p class="text-xs uppercase tracking-widest text-muted px-1 pb-2">{{ t.general }}</p>
@@ -174,7 +151,7 @@ async function submitFeedback() {
           </SettingsRow>
 
           <!-- Location -->
-          <SettingsRow :title="t.location" :subtitle="settings.district || t.locationAuto" :on-click="() => openView('location')">
+          <SettingsRow :title="t.location" :subtitle="settings.district || t.locationAuto" :on-click="() => emit('open-location')">
             <template #icon><MapPin :size="18" stroke-width="1.5" /></template>
             <template #right><ChevronRight :size="15" class="text-muted shrink-0" /></template>
           </SettingsRow>
@@ -257,9 +234,9 @@ async function submitFeedback() {
     </div>
 
     <!-- ════════════════════ LANGUAGE ════════════════════ -->
-    <div v-else-if="view === 'language'" key="language" class="min-h-screen">
+    <div v-else-if="view === 'language'" key="language" class="min-h-screen page-content">
       <PageHeader :title="t.language" @back="backToMain" />
-      <div class="flex flex-col gap-2.5 px-4 pt-16">
+      <div class="flex flex-col gap-2.5 px-4">
         <SelectOption
           v-for="lang in LANGUAGES" :key="lang.code"
           :label="lang.label"
@@ -270,11 +247,11 @@ async function submitFeedback() {
     </div>
 
     <!-- ════════════════════ TEXT SIZE ════════════════════ -->
-    <div v-else-if="view === 'textSize'" key="textSize" class="min-h-screen">
+    <div v-else-if="view === 'textSize'" key="textSize" class="min-h-screen page-content">
       <PageHeader :title="t.textSize" @back="backToMain" />
-      <div class="flex flex-col gap-2.5 px-4 pt-16">
+      <div class="flex flex-col gap-2.5 px-4">
         <SelectOption
-          v-for="opt in [{value:'large',label:t.textSizeLarge},{value:'normal',label:t.textSizeNormal},{value:'small',label:t.textSizeSmall}]" :key="opt.value"
+          v-for="opt in [{value:'normal',label:t.textSizeNormal},{value:'large',label:t.textSizeLarge},{value:'xlarge',label:t.textSizeXLarge}]" :key="opt.value"
           :label="opt.label"
           :selected="(settings.textSize ?? 'normal') === opt.value"
           @select="settings.textSize = opt.value"
@@ -282,61 +259,10 @@ async function submitFeedback() {
       </div>
     </div>
 
-    <!-- ════════════════════ LOCATION ════════════════════ -->
-    <div v-else-if="view === 'location'" key="location" class="min-h-screen">
-      <PageHeader :title="t.location" @back="backToMain" />
-
-      <div class="flex flex-col gap-2 px-4 pt-16 pb-10">
-        <div class="relative">
-          <Search :size="18" class="absolute left-4 top-1/2 -translate-y-1/2 text-muted pointer-events-none" />
-          <input
-            v-model="locationSearch"
-            type="search"
-            v-bind:placeholder="t.searchLocation"
-            class="w-full bg-card border border-(--bdr) rounded-xl pl-11 pr-10 py-3.5 text-sm text-fg placeholder:text-muted outline-none focus:border-gold transition-colors"
-          />
-          <button v-if="locationSearch" class="absolute right-3.5 top-1/2 -translate-y-1/2 text-muted hover:text-fg"
-            @click="locationSearch = ''">
-            <X :size="16" />
-          </button>
-        </div>
-        <button
-          v-if="!locationSearch"
-          class="flex items-center gap-3 px-4 py-4 rounded-xl transition-colors text-left"
-          :class="settings.locationMode === 'auto' ? 'bg-gold' : 'bg-card border border-(--bdr)'"
-          @click="selectGPS"
-        >
-          <Navigation :size="18" stroke-width="1.5"
-            :class="settings.locationMode === 'auto' ? 'text-nt' : 'text-muted'" />
-          <span class="flex-1 text-sm font-semibold"
-            :class="settings.locationMode === 'auto' ? 'text-nt' : 'text-fg'">Auto</span>
-          <span v-if="settings.locationMode === 'auto'"
-            class="w-7 h-7 rounded-full bg-card flex items-center justify-center shrink-0">
-            <Check :size="14" stroke-width="3" class="text-white" />
-          </span>
-        </button>
-        <button
-          v-for="item in filteredDistricts" :key="item.district"
-          class="flex items-center justify-between px-4 py-4 rounded-xl transition-colors text-left"
-          :class="settings.locationMode === 'manual' && settings.district === item.district
-            ? 'bg-gold' : 'bg-card border border-(--bdr)'"
-          @click="selectDistrict(item)"
-        >
-          <span class="text-sm font-semibold"
-            :class="settings.locationMode === 'manual' && settings.district === item.district
-              ? 'text-nt' : 'text-fg'">{{ item.district }}</span>
-          <span v-if="settings.locationMode === 'manual' && settings.district === item.district"
-            class="w-7 h-7 rounded-full bg-card flex items-center justify-center shrink-0">
-            <Check :size="14" stroke-width="3" class="text-white" />
-          </span>
-        </button>
-      </div>
-    </div>
-
     <!-- ════════════════════ PRAYER REMINDER ════════════════════ -->
-    <div v-else-if="view === 'reminder'" key="reminder" class="min-h-screen">
+    <div v-else-if="view === 'reminder'" key="reminder" class="min-h-screen page-content">
       <PageHeader :title="t.prayerReminder" @back="backToMain" />
-      <div class="flex flex-col gap-2.5 px-4 pt-16">
+      <div class="flex flex-col gap-2.5 px-4">
         <SelectOption
           v-for="m in REMINDERS" :key="m"
           :label="m + ' minutes before'"
@@ -347,9 +273,9 @@ async function submitFeedback() {
     </div>
 
     <!-- ════════════════════ REMINDER SOUND ════════════════════ -->
-    <div v-else-if="view === 'sound'" key="sound" class="min-h-screen">
+    <div v-else-if="view === 'sound'" key="sound" class="min-h-screen page-content">
       <PageHeader :title="t.reminderSound" @back="backToMain" />
-      <div class="flex flex-col gap-2.5 px-4 pt-16">
+      <div class="flex flex-col gap-2.5 px-4">
         <SelectOption
           v-for="opt in [{value:'azan',label:t.soundAzan},{value:'default',label:t.soundDefault},{value:'silent',label:t.soundSilent}]" :key="opt.value"
           :label="opt.label"
@@ -360,9 +286,9 @@ async function submitFeedback() {
     </div>
 
     <!-- ════════════════════ FEEDBACK ════════════════════ -->
-    <div v-else-if="view === 'feedback'" key="feedback" class="min-h-screen">
+    <div v-else-if="view === 'feedback'" key="feedback" class="min-h-screen page-content">
       <PageHeader :title="t.feedback" @back="backToMain" />
-      <div class="pt-16">
+      <div>
         <Transition name="fade-up">
           <div v-if="feedbackSuccess"
             class="fixed inset-x-0 bottom-8 mx-auto w-fit z-50 px-6 py-3.5 rounded-xl bg-gold text-nt flex items-center gap-2.5 shadow-xl"
@@ -372,7 +298,7 @@ async function submitFeedback() {
           </div>
         </Transition>
 
-        <div class="flex flex-col p-5 gap-5 bg-card rounded-xl border border-(--bdr) mx-4 mt-2">
+        <div class="flex flex-col p-5 gap-5 bg-card rounded-xl mx-4 mt-2">
           <div class="text-center">
             <p class="text-md font-bold text-gold tracking-wide">{{ t.letUsKnow }}</p>
             <p class="text-sm text-muted leading-relaxed mt-1">{{ t.feedbackDesc }}</p>
@@ -380,7 +306,7 @@ async function submitFeedback() {
           <div class="relative">
             <select
               v-model="feedbackType"
-              class="w-full appearance-none bg-nt border border-(--bdr) rounded-xl px-4 py-3 text-sm text-fg outline-none focus:border-gold transition-colors cursor-pointer pr-10"
+              class="w-full appearance-none bg-nt rounded-xl px-4 py-3 text-sm text-fg outline-none transition-colors cursor-pointer pr-10"
             >
               <option value="bug">{{ t.feedbackBug }}</option>
               <option value="suggestion">{{ t.feedbackSuggestion }}</option>
@@ -392,7 +318,7 @@ async function submitFeedback() {
             v-model="feedbackText"
             rows="6"
             v-bind:placeholder="t.feedbackPlaceholder"
-            class="w-full bg-nt border border-(--bdr) rounded-xl px-4 py-3 text-sm text-fg placeholder:text-muted outline-none focus:border-gold transition-colors resize-none"
+            class="w-full bg-nt rounded-xl px-4 py-3 text-sm text-fg placeholder:text-muted outline-none transition-colors resize-none"
           />
           <button
             class="w-full py-3.5 rounded-xl font-bold text-sm bg-gold text-nt transition-opacity"

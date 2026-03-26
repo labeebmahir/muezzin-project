@@ -76,14 +76,19 @@ button:active, a:active { opacity: 0.7; transform: scale(0.97); transition: opac
 
 
 /* Text size scale — zoom scales all children including fixed px values */
-[data-text-size="small"]  { zoom: 0.875; }
 [data-text-size="normal"] { zoom: 1; }
 [data-text-size="large"]  { zoom: 1.125; }
+[data-text-size="xlarge"] { zoom: 1.25; }
 
 /* Select option theming */
 select option {
   background-color: var(--card);
   color: var(--fg);
+}
+
+/* Push page content below fixed PageHeader (safe-area + header height) */
+.page-content {
+  padding-top: calc(env(safe-area-inset-top) + 4rem);
 }
 
 /* ── Page slide transitions ──────────────────────────────────────────── */

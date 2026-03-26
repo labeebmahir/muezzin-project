@@ -5,7 +5,7 @@ const STORAGE_KEY = 'muazzin_settings'
 const defaults = {
   language: 'en',           // 'en' | 'ta' | 'si'
   darkMode: true,
-  textSize: 'normal',       // 'small' | 'normal' | 'large'
+  textSize: 'normal',       // 'normal' | 'large' | 'xlarge'
   locationMode: 'auto',     // 'auto' | 'manual'
   zone: '01',               // ACJU timetable zone
   district: '',             // selected district name (manual mode)

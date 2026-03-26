@@ -169,10 +169,11 @@ function onTouchEnd(e) {
       v-else-if="subView === 'settings'"
       key="settings"
       @back="goBack"
+      @open-location="goTo('location')"
     />
 
     <!-- Home -->
-    <div v-else key="home" class="pb-8 pt-14 flex flex-col gap-6">
+    <div v-else key="home" class="pb-8 flex flex-col gap-6" style="padding-top: calc(env(safe-area-inset-top) + 4rem)">
       <AppHeader
         :city="settings.district || city"
         @open-calendar="goTo('calendar')"

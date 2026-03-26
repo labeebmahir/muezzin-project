@@ -96,7 +96,7 @@ function dismissInstall() {
 
       <!-- Sheet -->
       <Transition name="slide-up" appear>
-        <div class="relative w-full max-w-[480px] bg-card rounded-t-3xl px-6 pt-8 pb-10 flex flex-col items-center gap-5 text-center">
+        <div class="relative w-full max-w-120 bg-card rounded-t-3xl px-6 pt-8 pb-10 flex flex-col items-center gap-5 text-center">
 
           <!-- ── Notification Permission ── -->
           <template v-if="step === 'notification'">

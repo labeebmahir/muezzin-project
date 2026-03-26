@@ -1,11 +1,11 @@
 import { ref } from 'vue'
 import ZONES from '../data/zones.json'
 
-// Build a flat map: lowercase district name → zone id
+// Build a flat map: lowercase English district name → { zone, enName }
 const DISTRICT_ZONE = {}
 for (const z of ZONES) {
   for (const d of z.districts) {
-    DISTRICT_ZONE[d.toLowerCase()] = z.zone
+    DISTRICT_ZONE[d.en.toLowerCase()] = { zone: z.zone, enName: d.en }
   }
 }
 
@@ -21,12 +21,11 @@ export function findZoneForAddress(address) {
   for (const raw of candidates) {
     // Strip " District" suffix and try a match
     const name = raw.replace(/\s+district$/i, '').trim().toLowerCase()
-    if (DISTRICT_ZONE[name]) return { zone: DISTRICT_ZONE[name], district: raw.replace(/\s+district$/i, '').trim() }
+    if (DISTRICT_ZONE[name]) return { zone: DISTRICT_ZONE[name].zone, district: DISTRICT_ZONE[name].enName }
     // Partial match: check if any district name is contained in raw
-    for (const [key, zone] of Object.entries(DISTRICT_ZONE)) {
+    for (const [key, val] of Object.entries(DISTRICT_ZONE)) {
       if (name.includes(key) || key.includes(name)) {
-        const display = key.charAt(0).toUpperCase() + key.slice(1)
-        return { zone, district: display }
+        return { zone: val.zone, district: val.enName }
       }
     }
   }

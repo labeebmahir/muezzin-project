@@ -1,15 +1,56 @@
 [
-  { "zone": "01", "name": "Zone 01", "districts": ["Colombo", "Gampaha", "Kalutara"] },
-  { "zone": "02", "name": "Zone 02", "districts": ["Jaffna", "Nallur"] },
-  { "zone": "03", "name": "Zone 03", "districts": ["Mullaitivu", "Kilinochchi", "Vavuniya"] },
-  { "zone": "04", "name": "Zone 04", "districts": ["Mannar", "Puttalam"] },
-  { "zone": "05", "name": "Zone 05", "districts": ["Anuradhapura", "Polonnaruwa"] },
-  { "zone": "06", "name": "Zone 06", "districts": ["Kurunegala"] },
-  { "zone": "07", "name": "Zone 07", "districts": ["Kandy", "Matale", "Nuwara Eliya"] },
-  { "zone": "08", "name": "Zone 08", "districts": ["Batticaloa", "Ampara"] },
-  { "zone": "09", "name": "Zone 09", "districts": ["Trincomalee"] },
-  { "zone": "10", "name": "Zone 10", "districts": ["Badulla", "Monaragala", "Dehiaththakandiya", "Padiyatalawa"] },
-  { "zone": "11", "name": "Zone 11", "districts": ["Ratnapura", "Kegalle"] },
-  { "zone": "12", "name": "Zone 12", "districts": ["Galle", "Matara"] },
-  { "zone": "13", "name": "Zone 13", "districts": ["Hambantota"] }
+  { "zone": "01", "name": "Zone 01", "districts": [
+    { "en": "Colombo",    "ta": "கொழும்பு",       "si": "කොළඹ" },
+    { "en": "Gampaha",    "ta": "கம்பஹா",          "si": "ගම්පහ" },
+    { "en": "Kalutara",   "ta": "களுத்துறை",       "si": "කළුතර" }
+  ]},
+  { "zone": "02", "name": "Zone 02", "districts": [
+    { "en": "Jaffna",     "ta": "யாழ்ப்பாணம்",    "si": "යාපනය" },
+    { "en": "Nallur",     "ta": "நல்லூர்",          "si": "නල්ලූර්" }
+  ]},
+  { "zone": "03", "name": "Zone 03", "districts": [
+    { "en": "Mullaitivu", "ta": "முல்லைத்தீவு",    "si": "මුලතිව්" },
+    { "en": "Kilinochchi","ta": "கிளிநொச்சி",       "si": "කිලිනොච්චි" },
+    { "en": "Vavuniya",   "ta": "வவுனியா",          "si": "වවුනියාව" }
+  ]},
+  { "zone": "04", "name": "Zone 04", "districts": [
+    { "en": "Mannar",     "ta": "மன்னார்",          "si": "මන්නාරම" },
+    { "en": "Puttalam",   "ta": "புத்தளம்",         "si": "පුත්තලම" }
+  ]},
+  { "zone": "05", "name": "Zone 05", "districts": [
+    { "en": "Anuradhapura","ta": "அனுராதபுரம்",    "si": "අනුරාධපුරය" },
+    { "en": "Polonnaruwa","ta": "பொலன்னறுவை",      "si": "පොළොන්නරුව" }
+  ]},
+  { "zone": "06", "name": "Zone 06", "districts": [
+    { "en": "Kurunegala", "ta": "குருநாகல்",        "si": "කුරුණෑගල" }
+  ]},
+  { "zone": "07", "name": "Zone 07", "districts": [
+    { "en": "Kandy",      "ta": "கண்டி",            "si": "මහනුවර" },
+    { "en": "Matale",     "ta": "மாத்தளை",          "si": "මාතලේ" },
+    { "en": "Nuwara Eliya","ta": "நுவரெலியா",       "si": "නුවරඑළිය" }
+  ]},
+  { "zone": "08", "name": "Zone 08", "districts": [
+    { "en": "Batticaloa", "ta": "மட்டக்களப்பு",    "si": "මඩකලපුව" },
+    { "en": "Ampara",     "ta": "அம்பாறை",          "si": "අම්පාර" }
+  ]},
+  { "zone": "09", "name": "Zone 09", "districts": [
+    { "en": "Trincomalee","ta": "திருகோணமலை",       "si": "ත්‍රිකුණාමළය" }
+  ]},
+  { "zone": "10", "name": "Zone 10", "districts": [
+    { "en": "Badulla",            "ta": "பதுளை",            "si": "බදුල්ල" },
+    { "en": "Monaragala",         "ta": "மொணராகல",          "si": "මොනරාගල" },
+    { "en": "Dehiaththakandiya",  "ta": "தேஹியத்தகண்டிய",  "si": "දෙහිඅත්තකණ්ඩිය" },
+    { "en": "Padiyatalawa",       "ta": "படியத்தலாவ",       "si": "පාදියතලාව" }
+  ]},
+  { "zone": "11", "name": "Zone 11", "districts": [
+    { "en": "Ratnapura", "ta": "இரத்தினபுரி",      "si": "රත්නපුර" },
+    { "en": "Kegalle",   "ta": "கேகாலை",            "si": "කෑගල්ල" }
+  ]},
+  { "zone": "12", "name": "Zone 12", "districts": [
+    { "en": "Galle",     "ta": "காலி",              "si": "ගාල්ල" },
+    { "en": "Matara",    "ta": "மாத்தறை",           "si": "මාතර" }
+  ]},
+  { "zone": "13", "name": "Zone 13", "districts": [
+    { "en": "Hambantota","ta": "அம்பாந்தோட்டை",    "si": "හම්බන්තොට" }
+  ]}
 ]

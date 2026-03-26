@@ -132,11 +132,11 @@ async function share() {
 </script>
 
 <template>
-  <div class="min-h-screen pb-10">
+  <div class="min-h-screen pb-10 page-content">
     <!-- Header -->
     <PageHeader :title="t.calendarTitle" @back="$emit('back')" />
 
-    <div class="flex flex-col gap-8 px-4 pt-16">
+    <div class="flex flex-col gap-8 px-4">
 
       <div class="bg-card rounded-xl">
         <!-- Month navigator -->
