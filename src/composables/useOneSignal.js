@@ -31,14 +31,24 @@ export async function initOneSignal() {
 }
 
 export async function requestOneSignalPermission() {
+  // Try OneSignal first
   try {
     const OneSignal = window.OneSignal
-    if (!OneSignal) return false
-    await OneSignal.Notifications.requestPermission()
-    return OneSignal.Notifications.permission
-  } catch {
-    return false
-  }
+    if (OneSignal?.Notifications) {
+      await OneSignal.Notifications.requestPermission()
+      return OneSignal.Notifications.permission
+    }
+  } catch {}
+
+  // Fallback: native browser permission (works on iOS PWA 16.4+)
+  try {
+    if (typeof Notification !== 'undefined') {
+      const result = await Notification.requestPermission()
+      return result === 'granted'
+    }
+  } catch {}
+
+  return false
 }
 
 export async function tagZone(zone) {

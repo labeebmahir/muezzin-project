@@ -88,7 +88,7 @@ select option {
 
 /* Push page content below fixed PageHeader (safe-area + header height) */
 .page-content {
-  padding-top: calc(env(safe-area-inset-top) + 4rem);
+  padding-top: calc(env(safe-area-inset-top) + 3.5rem);
 }
 
 /* ── Page slide transitions ──────────────────────────────────────────── */

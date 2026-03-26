@@ -4,6 +4,7 @@ import { Bell, MapPin, Home } from 'lucide-vue-next'
 import { useI18n } from '../composables/useI18n.js'
 import { requestOneSignalPermission } from '../composables/useOneSignal.js'
 
+const emit = defineEmits(['location-granted'])
 const { t } = useI18n()
 
 // Steps: null = hidden, 'notification' | 'location' | 'install'
@@ -16,7 +17,7 @@ const isStandalone = window.matchMedia('(display-mode: standalone)').matches
 function nextStep(current) {
   if (current === 'notification') {
     if (typeof Notification !== 'undefined' && Notification.permission !== 'granted'
-        && !localStorage.getItem('muazzin_loc_granted')) {
+        && !localStorage.getItem('muezzin_loc_granted')) {
       step.value = 'location'
     } else if (!isStandalone) {
       step.value = 'install'
@@ -46,7 +47,7 @@ onMounted(() => {
   // Determine first step to show
   if (typeof Notification !== 'undefined' && Notification.permission !== 'granted') {
     step.value = 'notification'
-  } else if (!localStorage.getItem('muazzin_loc_granted')) {
+  } else if (!localStorage.getItem('muezzin_loc_granted')) {
     step.value = 'location'
   } else if (!isStandalone) {
     step.value = 'install'
@@ -65,7 +66,8 @@ async function allowLocation() {
     await new Promise((res, rej) => {
       navigator.geolocation.getCurrentPosition(res, rej, { timeout: 8000 })
     })
-    localStorage.setItem('muazzin_loc_granted', 'true')
+    localStorage.setItem('muezzin_loc_granted', 'true')
+    emit('location-granted')
   } catch {}
   nextStep('location')
 }
@@ -75,7 +77,7 @@ async function installApp() {
     installPrompt.value.prompt()
     const { outcome } = await installPrompt.value.userChoice
     if (outcome === 'accepted') {
-      localStorage.setItem('muazzin_install_done', 'true')
+      localStorage.setItem('muezzin_install_done', 'true')
     }
     installPrompt.value = null
   }
@@ -83,7 +85,7 @@ async function installApp() {
 }
 
 function dismissInstall() {
-  localStorage.setItem('muazzin_install_done', 'true')
+  localStorage.setItem('muezzin_install_done', 'true')
   step.value = null
 }
 </script>

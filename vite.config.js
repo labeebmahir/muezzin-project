@@ -14,7 +14,7 @@ export default defineConfig({
       filename: 'sw.js',
       manifest: {
         name: 'Muezzin- Prayer Times',
-        short_name: 'Muazzin',
+        short_name: 'Muezzin',
         description: 'Islamic prayer times and adhan player',
         theme_color: '#0B3124',
         background_color: '#0B3124',

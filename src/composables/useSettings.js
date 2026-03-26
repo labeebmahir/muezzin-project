@@ -1,6 +1,6 @@
 import { reactive, watch } from 'vue'
 
-const STORAGE_KEY = 'muazzin_settings'
+const STORAGE_KEY = 'muezzin_settings'
 
 const defaults = {
   language: 'en',           // 'en' | 'ta' | 'si'

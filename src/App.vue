@@ -104,19 +104,24 @@ watch(() => settings.textSize, applyTextSize)
 // Tag zone in OneSignal whenever it changes (so server knows who to notify)
 watch(() => settings.zone, (zone) => tagZone(zone), { immediate: false })
 
-onMounted(async () => {
-  applyTheme()
-  applyTextSize()
-  updateDates()
+async function applyLocation() {
   await getLocation()
   if (settings.locationMode === 'auto' && detectedZone.value) {
     settings.zone = detectedZone.value
     settings.district = detectedDistrict.value
   }
+}
+
+onMounted(async () => {
+  applyTheme()
+  applyTextSize()
+  updateDates()
+  // Init OneSignal early so it's ready when user taps Allow in onboarding
+  initOneSignal().then(() => tagZone(settings.zone))
+  // Only auto-locate if permission already granted (don't prompt on load)
+  const perm = await navigator.permissions?.query({ name: 'geolocation' }).catch(() => null)
+  if (perm?.state === 'granted') await applyLocation()
   startTimer()
-  // Init OneSignal after app is ready
-  await initOneSignal()
-  tagZone(settings.zone)
 })
 
 onUnmounted(() => stopTimer())
@@ -142,7 +147,7 @@ function onTouchEnd(e) {
 
 <template>
   <!-- Onboarding -->
-  <OnboardingSheet />
+  <OnboardingSheet @location-granted="applyLocation" />
 
   <div class="relative overflow-x-hidden min-h-screen"
     @touchstart.passive="onTouchStart"
@@ -173,7 +178,7 @@ function onTouchEnd(e) {
     />
 
     <!-- Home -->
-    <div v-else key="home" class="pb-8 flex flex-col gap-6" style="padding-top: calc(env(safe-area-inset-top) + 4rem)">
+    <div v-else key="home" class="pb-8 flex flex-col gap-6" style="padding-top: calc(env(safe-area-inset-top) + 3.5rem)">
       <AppHeader
         :city="settings.district || city"
         @open-calendar="goTo('calendar')"

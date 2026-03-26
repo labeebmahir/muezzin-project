@@ -88,7 +88,7 @@ export function useNotifications() {
     scheduleViaTimeout(prayers, offsetMs)
 
     if (!swBackground) {
-      console.info('[Muazzin] Background notifications not supported on this browser. Notifications will only fire while the app is open.')
+      console.info('[Muezzin] Background notifications not supported on this browser. Notifications will only fire while the app is open.')
     }
   }
 

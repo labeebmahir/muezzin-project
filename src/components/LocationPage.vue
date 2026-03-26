@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { Search, X } from 'lucide-vue-next'
 import PageHeader from './PageHeader.vue'
 import SelectOption from './SelectOption.vue'
@@ -10,6 +10,16 @@ import ZONES from '../data/zones.json'
 defineEmits(['back'])
 const { settings } = useSettings()
 const { t } = useI18n()
+
+const locationPermission = ref('prompt') // 'granted' | 'denied' | 'prompt'
+
+onMounted(async () => {
+  const perm = await navigator.permissions?.query({ name: 'geolocation' }).catch(() => null)
+  if (perm) {
+    locationPermission.value = perm.state
+    perm.onchange = () => { locationPermission.value = perm.state }
+  }
+})
 
 const query = ref('')
 
@@ -66,12 +76,16 @@ function selectDistrict(item) {
 
       <div class="flex flex-col gap-2">
         <!-- Auto option (hidden while searching) -->
-        <SelectOption
-          v-if="!query"
-          :label="t.locationAuto"
-          :selected="settings.locationMode === 'auto'"
-          @select="selectAuto"
-        />
+        <div v-if="!query" :class="locationPermission !== 'granted' && 'opacity-40 pointer-events-none'">
+          <SelectOption
+            :label="t.locationAuto"
+            :selected="settings.locationMode === 'auto'"
+            @select="selectAuto"
+          />
+          <p v-if="locationPermission !== 'granted'" class="text-xs text-muted text-center mt-1.5">
+            {{ locationPermission === 'denied' ? t.locationPermDenied : t.locationPermRequired }}
+          </p>
+        </div>
 
         <!-- District list -->
         <SelectOption
