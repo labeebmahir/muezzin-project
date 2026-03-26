@@ -21,12 +21,12 @@ const displayName = computed(() =>
 
 <template>
   <div
-    class="flex items-center justify-between px-4 py-4 rounded-2xl transition-colors"
+    class="flex items-center justify-between px-4 py-4 rounded-xl transition-colors"
     :class="isNext
-      ? 'bg-next'
+      ? 'bg-gold'
       : isPast
-        ? 'bg-card border border-(--bdr) opacity-40'
-        : 'bg-card border border-(--bdr)'"
+        ? 'bg-card opacity-40'
+        : 'bg-card'"
   >
     <!-- Left: icon + name -->
     <div class="flex items-center gap-3">
@@ -37,19 +37,19 @@ const displayName = computed(() =>
 
       <div class="flex flex-col leading-tight">
         <span v-if="isNext"
-          class="text-[10px] font-semibold tracking-wide uppercase opacity-75 text-white">
+          class="text-sm font-semibold tracking-wide uppercase text-white">
           {{ t.next }}
         </span>
-        <span class="text-base font-semibold"
-          :class="isNext ? 'text-white' : 'text-fg'">
+        <span class="font-semibold"
+          :class="isNext ? 'text-white text-lg' : 'text-fg'">
           {{ displayName }}
         </span>
       </div>
     </div>
 
     <!-- Right: time -->
-    <span class="text-[15px] font-semibold"
-      :class="isNext ? 'text-white' : 'text-fg'">
+    <span class="font-semibold"
+      :class="isNext ? 'text-white text-lg' : 'text-fg text-sm'">
       {{ prayer.timeStr }}
     </span>
   </div>

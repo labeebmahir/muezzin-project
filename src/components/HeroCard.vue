@@ -25,7 +25,7 @@ const theme = computed(() => THEMES[props.nextPrayerKey] ?? THEMES.dhuhr)
 <template>
   <div
     class="relative mx-4 mt-2 rounded-[20px] overflow-hidden flex flex-col items-center gap-1.5 pt-7 transition-all duration-1000"
-    :style="{ background: theme.gradient, minHeight: '240px' }"
+    :style="{ background: theme.gradient, minHeight: '270px' }"
   >
     <!-- Stars -->
     <template v-if="theme.stars">
@@ -37,10 +37,10 @@ const theme = computed(() => THEMES[props.nextPrayerKey] ?? THEMES.dhuhr)
     </template>
 
     <!-- Labels -->
-    <p class="relative z-10 text-[13px] font-bold tracking-[1.5px] text-white/90 uppercase">
+    <p class="relative z-10 text-xl font-bold tracking-[1.5px] text-white/90 uppercase">
       {{ nextPrayer }} {{ t.in }}
     </p>
-    <p class="relative z-10 font-extrabold text-white leading-none tracking-tight"
+    <p class="relative z-10 font-medium text-white leading-none tracking-tight"
        style="font-size: clamp(36px,10vw,52px)">
       {{ countdown }}
     </p>
@@ -48,7 +48,7 @@ const theme = computed(() => THEMES[props.nextPrayerKey] ?? THEMES.dhuhr)
     <!-- Celestial body -->
     <div
       class="relative flex items-center justify-center"
-      :class="theme.bottom ? 'mt-auto' : 'mt-3 mb-2'"
+      :class="theme.bottom ? 'mt-auto' : 'mt-7 mb-2'"
       :style="theme.bottom ? 'transform: translateY(42%)' : ''"
     >
       <!-- Outer ring -->

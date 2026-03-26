@@ -1,8 +1,9 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { Coordinates, CalculationMethod, PrayerTimes } from 'adhan'
-import { Share2 } from 'lucide-vue-next'
+import { Share2, ChevronRight,ChevronLeft } from 'lucide-vue-next'
 import PrayerIcon from './PrayerIcon.vue'
+import PageHeader from './PageHeader.vue'
 import { useSettings } from '../composables/useSettings.js'
 import { useI18n } from '../composables/useI18n.js'
 import { PRAYER_NAMES } from '../constants/prayerNames.js'
@@ -133,88 +134,88 @@ async function share() {
 <template>
   <div class="min-h-screen pb-10">
     <!-- Header -->
-    <header class="flex items-center gap-3 px-4 pt-4 pb-2 sticky top-0 bg-bg z-10">
-      <button class="p-1.5 rounded-lg text-muted hover:text-fg transition-colors" @click="$emit('back')">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-      </button>
-      <h1 class="text-lg font-bold text-fg">{{ t.calendarTitle }}</h1>
-    </header>
+    <PageHeader :title="t.calendarTitle" @back="$emit('back')" />
 
-    <div class="flex flex-col gap-3 px-4 pt-2">
+    <div class="flex flex-col gap-8 px-4 pt-16">
 
-      <!-- Month navigator -->
-      <div class="bg-card border border-(--bdr) rounded-2xl flex items-center justify-between px-4 py-3.5">
-        <button class="p-2 rounded-lg text-muted hover:text-fg transition-colors" @click="prevMonth">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-        </button>
-        <div class="text-center">
-          <p class="text-base font-bold text-gold">{{ monthHeader }}</p>
-          <p class="text-xs text-muted mt-0.5">{{ gregRange }}</p>
-        </div>
-        <button class="p-2 rounded-lg text-muted hover:text-fg transition-colors" @click="nextMonth">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-        </button>
-      </div>
-
-      <!-- Calendar grid -->
-      <div class="bg-card border border-(--bdr) rounded-2xl p-3">
-        <!-- DOW headers -->
-        <div class="grid grid-cols-7 mb-1">
-          <span v-for="d in t.dow" :key="d"
-            class="text-center text-[11px] font-semibold text-muted py-1">{{ d }}</span>
-        </div>
-        <!-- Weeks -->
-        <div v-for="(week, wi) in weeks" :key="wi" class="grid grid-cols-7">
-          <button
-            v-for="(day, di) in week" :key="di"
-            class="flex flex-col items-center justify-center min-h-13 rounded-xl gap-0.5 transition-colors"
-            :class="[
-              !day ? 'cursor-default' : 'cursor-pointer',
-              day?.isToday    ? 'bg-next' : '',
-              day?.isSelected && !day?.isToday ? 'bg-gold/15 ring-1 ring-gold/40' : '',
-              !day?.isToday && !day?.isSelected && day ? 'hover:bg-white/5' : '',
-            ]"
-            @click="day && (selectedDate = new Date(day.gregorianDate))"
-          >
-            <template v-if="day">
-              <span class="text-base font-semibold leading-none"
-                :class="day.isToday ? 'text-white font-extrabold' : 'text-fg'">
-                {{ day.hijriDay }}
-              </span>
-              <span class="text-[9px] leading-none"
-                :class="day.isToday ? 'text-white/70' : 'text-muted'">
-                {{ day.gregShort }}
-              </span>
-            </template>
+      <div class="bg-card rounded-xl">
+        <!-- Month navigator -->
+        <div class="flex items-center justify-between p-4">
+          <button class="p-1.5 rounded-lg text-muted hover:text-fg hover:bg-white/10 transition-colors"" @click="prevMonth">
+            <ChevronLeft :size="22" stroke-width="1.5" />
+          </button>
+          <div class="text-center">
+            <p class="text-base font-bold text-gold">{{ monthHeader }}</p>
+            <p class="text-sm mt-q">{{ gregRange }}</p>
+          </div>
+          <button class="p-1.5 rounded-lg text-muted hover:text-fg hover:bg-white/10 transition-colors"" @click="nextMonth">
+            <ChevronRight :size="22" stroke-width="1.5" />
           </button>
         </div>
-      </div>
-
-      <!-- Selected date info -->
-      <div class="flex items-center justify-between px-1">
-        <div>
-          <p class="text-[15px] font-semibold text-gold">{{ selHijri }}</p>
-          <p class="text-sm text-muted mt-0.5">{{ selGreg }}</p>
-        </div>
-        <button class="p-2 rounded-lg text-muted hover:text-fg transition-colors" aria-label="Share" @click="share">
-          <Share2 :size="20" stroke-width="1.8" />
-        </button>
-      </div>
-
-      <!-- Prayer cards grid -->
-      <div v-if="selPrayers.length" class="grid grid-cols-3 gap-2">
-        <div
-          v-for="(p, i) in selPrayers" :key="p.key"
-          class="flex flex-col items-center gap-1.5 py-3.5 px-2 rounded-2xl border"
-          :class="i === nextIdx
-            ? 'bg-next border-transparent'
-            : 'bg-card border-(--bdr)'"
-        >
-          <div :class="i === nextIdx ? 'text-white' : 'text-gold'">
-            <PrayerIcon :prayer-key="p.key" :size="22" />
+        <!-- Calendar grid -->
+        <div class="p-4">
+          <!-- DOW headers -->
+          <div class="grid grid-cols-7 mb-1">
+            <span v-for="d in t.dow" :key="d"
+              class="text-center text-sm font-semibold py-1">{{ d }}</span>
           </div>
-          <span class="text-[13px] font-semibold" :class="i === nextIdx ? 'text-white' : 'text-fg'">{{ p.name }}</span>
-          <span class="text-sm font-extrabold"     :class="i === nextIdx ? 'text-white' : 'text-fg'">{{ p.timeStr }}</span>
+          <!-- Weeks -->
+          <div v-for="(week, wi) in weeks" :key="wi" class="grid grid-cols-7">
+            <button
+              v-for="(day, di) in week" :key="di"
+              class="flex flex-col items-center justify-center min-h-13 rounded-xl gap-0.5 transition-colors"
+              :class="[
+                !day ? 'cursor-default' : 'cursor-pointer',
+                day?.isToday    ? 'bg-gold' : '',
+                day?.isSelected && !day?.isToday ? 'bg-gold/15 ring-1 ring-gold/40' : '',
+                !day?.isToday && !day?.isSelected && day ? 'hover:bg-white/5' : '',
+              ]"
+              @click="day && (selectedDate = new Date(day.gregorianDate))"
+            >
+              <template v-if="day">
+                <span class="text-lg font-medium"
+                :class="day.isToday ? 'text-card font-extrabold' : 'text-gold'">
+                {{ day.hijriDay }}
+              </span>
+              <span class="text-xs leading-none"
+                :class="day.isToday ? 'text-card' : 'text-white'">
+                {{ day.gregShort }}
+              </span>
+              </template>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex flex-col gap-4">
+        <!-- Selected date info -->
+        <div class="flex items-center justify-between px-1">
+          <div>
+            <p class="text-sm font-semibold text-gold">{{ selHijri }}</p>
+            <p class="text-sm text-muted mt-0.5">{{ selGreg }}</p>
+          </div>
+          <button class="p-1.5 rounded-lg text-muted hover:text-fg hover:bg-white/10 transition-colors" aria-label="Share" @click="share">
+            <Share2 :size="22" stroke-width="1.5" />
+          </button>
+        </div>
+
+        <!-- Prayer cards grid -->
+        <div v-if="selPrayers.length" class="grid grid-cols-3 gap-4">
+          <div
+            v-for="(p, i) in selPrayers" :key="p.key"
+            class="flex flex-col items-center gap-4 py-3.5 px-2 rounded-xl"
+            :class="i === nextIdx
+              ? 'bg-gold'
+              : 'bg-card'"
+          >
+            <div :class="i === nextIdx ? 'text-white' : 'text-gold'">
+              <PrayerIcon :prayer-key="p.key" :size="22" />
+            </div>
+            <div class="flex flex-col items-center gap-1">
+              <span class="text-md font-semibold" :class="i === nextIdx ? 'text-white' : 'text-fg'">{{ p.name }}</span>
+              <span class="text-sm" :class="i === nextIdx ? 'text-white' : 'text-fg'">{{ p.timeStr }}</span>
+            </div>
+          </div>
         </div>
       </div>
     </div>

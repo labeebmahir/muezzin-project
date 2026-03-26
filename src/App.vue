@@ -172,38 +172,43 @@ function onTouchEnd(e) {
     />
 
     <!-- Home -->
-    <div v-else key="home" class="pb-8 pt-14">
+    <div v-else key="home" class="pb-8 pt-14 flex flex-col gap-6">
       <AppHeader
-        :city="city"
+        :city="settings.district || city"
         @open-calendar="goTo('calendar')"
         @open-settings="goTo('settings')"
         @open-location="goTo('location')"
       />
 
-    <HeroCard :next-prayer="nextPrayerName" :countdown="countdownStr" :next-prayer-key="nextPrayerKey" />
+      <HeroCard :next-prayer="nextPrayerName" :countdown="countdownStr" :next-prayer-key="nextPrayerKey" />
 
-    <!-- Date row -->
-    <div class="flex items-center justify-between px-4 pt-4 pb-3">
-      <div>
-        <p class="text-[15px] font-semibold text-gold mb-0.5">{{ hijriDate }}</p>
-        <p class="text-[13px] text-muted">{{ gregorianDate }}</p>
+      <!-- Date row -->
+      <div class="flex items-center justify-between px-4">
+        <div>
+          <p class="text-sm font-semibold text-gold mb-0.5">{{ hijriDate }}</p>
+          <p class="text-[13px] text-muted">{{ gregorianDate }}</p>
+        </div>
+        
+        <button
+          @click="share"
+          aria-label="Share prayer times"
+          class="p-1.5 rounded-lg text-muted hover:text-fg hover:bg-white/10 transition-colors"
+        >
+          <Share2 :size="22" stroke-width="1.5" />
+        </button>
       </div>
-      <button class="p-2 rounded-lg text-muted hover:text-fg transition-colors" @click="share" aria-label="Share prayer times">
-        <Share2 :size="20" stroke-width="1.8" />
-      </button>
-    </div>
 
-    <!-- Prayer list -->
-    <div class="flex flex-col gap-2 px-4">
-      <PrayerItem
-        v-for="(prayer, i) in prayers"
-        :key="prayer.key"
-        :prayer="prayer"
-        :is-next="i === nextPrayerIndex"
-        :is-past="nextPrayerIndex === -1 || (nextPrayerIndex >= 0 && i < nextPrayerIndex)"
-      />
+      <!-- Prayer list -->
+      <div class="flex flex-col gap-2 px-4">
+        <PrayerItem
+          v-for="(prayer, i) in prayers"
+          :key="prayer.key"
+          :prayer="prayer"
+          :is-next="i === nextPrayerIndex"
+          :is-past="nextPrayerIndex === -1 || (nextPrayerIndex >= 0 && i < nextPrayerIndex)"
+        />
+      </div>
     </div>
-  </div>
   </Transition>
   </div>
 </template>

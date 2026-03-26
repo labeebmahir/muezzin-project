@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted } from 'vue'
-import { Bell, MapPin } from 'lucide-vue-next'
+import { Bell, MapPin, Home } from 'lucide-vue-next'
 import { useI18n } from '../composables/useI18n.js'
 import { requestOneSignalPermission } from '../composables/useOneSignal.js'
 
@@ -100,18 +100,18 @@ function dismissInstall() {
 
           <!-- ── Notification Permission ── -->
           <template v-if="step === 'notification'">
-            <div class="w-16 h-16 rounded-2xl bg-icon-bg border border-icon-bdr flex items-center justify-center">
-              <Bell :size="30" class="text-gold" stroke-width="1.6" />
+            <div class="w-16 h-16 rounded-xl bg-icon-bg border border-icon-bdr flex items-center justify-center">
+              <Bell :size="30" class="text-gold" stroke-width="1.5" />
             </div>
             <div>
               <p class="text-[18px] font-bold text-fg">{{ t.notifPermTitle }}</p>
-              <p class="text-[14px] text-muted mt-2 leading-relaxed">{{ t.notifPermDesc }}</p>
+              <p class="text-sm text-muted mt-2 leading-relaxed">{{ t.notifPermDesc }}</p>
             </div>
             <div class="flex gap-3 w-full pt-1">
-              <button class="flex-1 py-3.5 text-[15px] font-bold text-gold" @click="nextStep('notification')">
+              <button class="flex-1 py-3.5 text-sm font-bold text-gold" @click="nextStep('notification')">
                 {{ t.skip }}
               </button>
-              <button class="flex-1 py-3.5 rounded-2xl bg-gold text-nt text-[15px] font-bold" @click="allowNotification">
+              <button class="flex-1 py-3.5 rounded-xl bg-gold text-nt text-sm font-bold" @click="allowNotification">
                 {{ t.allow }}
               </button>
             </div>
@@ -119,18 +119,18 @@ function dismissInstall() {
 
           <!-- ── Location Permission ── -->
           <template v-else-if="step === 'location'">
-            <div class="w-16 h-16 rounded-2xl bg-icon-bg border border-icon-bdr flex items-center justify-center">
-              <MapPin :size="30" class="text-gold" stroke-width="1.6" />
+            <div class="w-16 h-16 rounded-xl bg-icon-bg border border-icon-bdr flex items-center justify-center">
+              <MapPin :size="30" class="text-gold" stroke-width="1.5" />
             </div>
             <div>
               <p class="text-[18px] font-bold text-fg">{{ t.locationPermTitle }}</p>
-              <p class="text-[14px] text-muted mt-2 leading-relaxed">{{ t.locationPermDesc }}</p>
+              <p class="text-sm text-muted mt-2 leading-relaxed">{{ t.locationPermDesc }}</p>
             </div>
             <div class="flex gap-3 w-full pt-1">
-              <button class="flex-1 py-3.5 text-[15px] font-bold text-gold" @click="nextStep('location')">
+              <button class="flex-1 py-3.5 text-sm font-bold text-gold" @click="nextStep('location')">
                 {{ t.skip }}
               </button>
-              <button class="flex-1 py-3.5 rounded-2xl bg-gold text-nt text-[15px] font-bold" @click="allowLocation">
+              <button class="flex-1 py-3.5 rounded-xl bg-gold text-nt text-sm font-bold" @click="allowLocation">
                 {{ t.allow }}
               </button>
             </div>
@@ -139,16 +139,12 @@ function dismissInstall() {
           <!-- ── Add to Home Screen ── -->
           <template v-else-if="step === 'install'">
             <!-- Icon: house + phone -->
-            <div class="w-16 h-16 rounded-2xl bg-icon-bg border border-icon-bdr flex items-center justify-center">
-              <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" class="text-gold">
-                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-                <polyline points="9 22 9 12 15 12 15 22"/>
-              </svg>
+            <div class="w-16 h-16 rounded-xl bg-icon-bg border border-icon-bdr flex items-center justify-center">
+              <Home :size="30" stroke-width="1.5" class="text-gold" />
             </div>
             <div>
               <p class="text-[18px] font-bold text-fg">{{ t.installTitle }}</p>
-              <p class="text-[14px] text-muted mt-2 leading-relaxed">
+              <p class="text-sm text-muted mt-2 leading-relaxed">
                 {{ t.installDesc }}
                 <template v-if="isIOS">
                   <br/><span class="mt-1 block">{{ t.installDescIOS }}</span>
@@ -156,10 +152,10 @@ function dismissInstall() {
               </p>
             </div>
             <div class="flex gap-3 w-full pt-1">
-              <button class="flex-1 py-3.5 text-[15px] font-bold text-gold" @click="step = null">
+              <button class="flex-1 py-3.5 text-sm font-bold text-gold" @click="step = null">
                 {{ t.later }}
               </button>
-              <button class="flex-1 py-3.5 rounded-2xl bg-gold text-nt text-[15px] font-bold"
+              <button class="flex-1 py-3.5 rounded-xl bg-gold text-nt text-sm font-bold"
                 @click="isIOS ? dismissInstall() : (installPrompt ? installApp() : dismissInstall())">
                 {{ isIOS ? t.done : t.add }}
               </button>

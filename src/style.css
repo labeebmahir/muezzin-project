@@ -4,27 +4,25 @@
 :root {
   --bg:      #111612;
   --card:    #0B3124;
-  --bdr:     rgba(255,255,255,0.08);
+  --bdr:     #ffffff14;
   --fg:      #FFFFFF;
   --muted:   #8aab9e;
   --gold:    #C6AA57;
-  --next:    #C6AA57;
   --nt:      #111612;
-  --icon-bg: rgba(198,170,87,0.12);
-  --icon-bdr:rgba(198,170,87,0.22);
+  --icon-bg: #c6aa571f;
+  --icon-bdr:#c6aa5738;
 }
 
 :root.light {
   --bg:      #F0F4F8;
   --card:    #FFFFFF;
-  --bdr:     rgba(0,0,0,0.08);
+  --bdr:     #00000014;
   --fg:      #111612;
   --muted:   #64748b;
   --gold:    #C6AA57;
-  --next:    #C6AA57;
   --nt:      #111612;
-  --icon-bg: rgba(11,49,36,0.08);
-  --icon-bdr:rgba(11,49,36,0.15);
+  --icon-bg: #0b312414;
+  --icon-bdr:#0b312426;
 }
 
 /* ── Tailwind color aliases (runtime CSS-var mapping) ────────────────── */
@@ -34,7 +32,6 @@
   --color-fg:       var(--fg);
   --color-muted:    var(--muted);
   --color-gold:     var(--gold);
-  --color-next:     var(--next);
   --color-nt:       var(--nt);
   --color-icon-bg:  var(--icon-bg);
   --color-icon-bdr: var(--icon-bdr);
@@ -42,6 +39,11 @@
 }
 
 /* ── Base ────────────────────────────────────────────────────────────── */
+*, *::before, *::after {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+}
+
 body {
   background-color: var(--bg);
   color: var(--fg);
@@ -49,7 +51,15 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   min-height: 100dvh;
+  overscroll-behavior: none;
+  user-select: none;
 }
+
+/* Allow text selection only in inputs and textareas */
+input, textarea { user-select: text; }
+
+/* Press feedback on all interactive elements */
+button:active, a:active { opacity: 0.7; transform: scale(0.97); transition: opacity 0.1s, transform 0.1s; }
 
 #app {
   max-width: 480px;
@@ -60,15 +70,10 @@ body {
   /* PWA status bar safe area */
   padding-top: env(safe-area-inset-top);
   padding-bottom: env(safe-area-inset-bottom);
+  /* Smooth momentum scrolling on iOS */
+  -webkit-overflow-scrolling: touch;
 }
 
-button {
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: inherit;
-  font-family: inherit;
-}
 
 /* Text size scale — zoom scales all children including fixed px values */
 [data-text-size="small"]  { zoom: 0.875; }
