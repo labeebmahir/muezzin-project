@@ -70,14 +70,14 @@ const hijriLabel = computed(() => {
   for (const cal of cals) {
     try {
       const s = d.toLocaleDateString(`${lang}-u-ca-${cal}`, { day: 'numeric', month: 'long', year: 'numeric' })
-      if (s) return s
+      if (s && !s.includes('BC')) return s.replace(/\s*\bBC\b/g, '').trim()
     } catch {}
   }
   if (lang !== 'en') {
     for (const cal of cals) {
       try {
         const s = d.toLocaleDateString(`en-u-ca-${cal}`, { day: 'numeric', month: 'long', year: 'numeric' })
-        if (s) return s
+        if (s && !s.includes('BC')) return s.replace(/\s*\bBC\b/g, '').trim()
       } catch {}
     }
   }

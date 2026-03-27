@@ -7,7 +7,7 @@ import { useSettings } from '../composables/useSettings.js'
 import { useI18n } from '../composables/useI18n.js'
 import ZONES from '../data/zones.json'
 
-defineEmits(['back'])
+const emit = defineEmits(['back', 'locate'])
 const { settings } = useSettings()
 const { t } = useI18n()
 
@@ -42,9 +42,15 @@ function localName(d) {
   return d[settings.language ?? 'en'] ?? d.en
 }
 
-function selectAuto() {
+const locating = ref(false)
+
+async function selectAuto() {
   settings.locationMode = 'auto'
+  locating.value = true
+  emit('locate')
 }
+
+defineExpose({ doneLocating: () => { locating.value = false } })
 
 function selectDistrict(item) {
   settings.locationMode = 'manual'
@@ -78,7 +84,7 @@ function selectDistrict(item) {
         <!-- Auto option (hidden while searching) -->
         <div v-if="!query" :class="locationPermission !== 'granted' && 'opacity-40 pointer-events-none'">
           <SelectOption
-            :label="t.locationAuto"
+            :label="locating ? t.locationDetecting ?? 'Detecting…' : t.locationAuto"
             :selected="settings.locationMode === 'auto'"
             @select="selectAuto"
           />

@@ -52,7 +52,8 @@ function updateDates() {
   for (const cal of islamicCals) {
     try {
       hijri = adjusted.toLocaleDateString(`${lang}-u-ca-${cal}`, { day: 'numeric', month: 'long', year: 'numeric' })
-      if (hijri) break
+      if (hijri && !hijri.includes('BC')) break
+      hijri = ''
     } catch {}
   }
   if (!hijri && lang !== 'en') {
@@ -60,11 +61,13 @@ function updateDates() {
     for (const cal of islamicCals) {
       try {
         hijri = adjusted.toLocaleDateString(`en-u-ca-${cal}`, { day: 'numeric', month: 'long', year: 'numeric' })
-        if (hijri) break
+        if (hijri && !hijri.includes('BC')) break
+        hijri = ''
       } catch {}
     }
   }
-  hijriDate.value = hijri
+  // Some Android Chrome versions incorrectly append "BC" — strip it
+  hijriDate.value = hijri.replace(/\s*\bBC\b/g, '').trim()
 }
 
 const nextPrayerNameLocal = computed(() =>
@@ -116,12 +119,15 @@ watch(() => settings.textSize, applyTextSize)
 // Tag zone in OneSignal whenever it changes (so server knows who to notify)
 watch(() => settings.zone, (zone) => { tagZone(zone); startTimer() }, { immediate: false })
 
+const locationPageRef = ref(null)
+
 async function applyLocation() {
   await getLocation()
   if (settings.locationMode === 'auto' && detectedZone.value) {
     settings.zone = detectedZone.value
     settings.district = detectedDistrict.value
   }
+  locationPageRef.value?.doneLocating()
 }
 
 onMounted(async () => {
@@ -184,7 +190,9 @@ function onTouchEnd(e) {
     <LocationPage
       v-else-if="subView === 'location'"
       key="location"
+      ref="locationPageRef"
       @back="goBack"
+      @locate="applyLocation"
     />
 
     <!-- Settings view -->
