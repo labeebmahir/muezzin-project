@@ -8,9 +8,20 @@
  * Column aliases: luhar → dhuhr, magrib → maghrib.
  */
 import { useSettings } from './useSettings.js'
+import ZONES from '../data/zones.json'
 
 // Eagerly bundle all zone files at build time
 const zoneFiles = import.meta.glob('../data/zone-*.json', { eager: true })
+
+export function getLocalDistrict(districtEn, language) {
+  if (!districtEn) return ''
+  for (const zone of ZONES) {
+    for (const d of zone.districts) {
+      if (d.en === districtEn) return d[language] ?? d.en
+    }
+  }
+  return districtEn
+}
 
 function normalise(row) {
   const out = {}
@@ -33,14 +44,26 @@ function getRows(zone) {
   return arr.map(normalise)
 }
 
+function localDateStr(date) {
+  const y = date.getFullYear()
+  const m = String(date.getMonth() + 1).padStart(2, '0')
+  const d = String(date.getDate()).padStart(2, '0')
+  return `${y}-${m}-${d}`
+}
+
 export function usePrayerData() {
   const { settings } = useSettings()
 
   function getTodayEntry() {
     const rows = getRows(settings.zone)
     if (!rows.length) return null
-    const today = new Date().toISOString().split('T')[0]
-    return rows.find((r) => r.date === today) ?? null
+    return rows.find((r) => r.date === localDateStr(new Date())) ?? null
+  }
+
+  function getEntryForDate(date) {
+    const rows = getRows(settings.zone)
+    if (!rows.length) return null
+    return rows.find((r) => r.date === localDateStr(date)) ?? null
   }
 
   function getZoneInfo() {
@@ -51,5 +74,5 @@ export function usePrayerData() {
     return { districts: raw.districts ?? [], zone: raw.zone }
   }
 
-  return { getTodayEntry, getZoneInfo }
+  return { getTodayEntry, getEntryForDate, getZoneInfo }
 }

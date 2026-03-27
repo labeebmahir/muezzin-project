@@ -12,7 +12,7 @@ import { useLocation } from './composables/useLocation.js'
 import { initOneSignal, tagZone } from './composables/useOneSignal.js'
 import { usePrayerTimes } from './composables/usePrayerTimes.js'
 import { useNotifications } from './composables/useNotifications.js'
-import { usePrayerData } from './composables/usePrayerData.js'
+import { usePrayerData, getLocalDistrict } from './composables/usePrayerData.js'
 import { useSettings } from './composables/useSettings.js'
 import { shareAsImage } from './composables/useShareImage.js'
 
@@ -24,9 +24,9 @@ function goBack()   { pageTx.value = 'slide-back';    subView.value = 'home' }
 
 // ── Core composables ───────────────────────────────────────────────────────
 
-const { city, coords, detectedZone, detectedDistrict, getLocation } = useLocation()
-const { getTodayEntry } = usePrayerData()
-const { prayers, nextPrayerIndex, nextPrayerName, nextPrayerKey, countdown, start: startTimer, stop: stopTimer } = usePrayerTimes(coords, getTodayEntry)
+const { city, detectedZone, detectedDistrict, getLocation } = useLocation()
+const { getEntryForDate } = usePrayerData()
+const { prayers, nextPrayerIndex, nextPrayerName, nextPrayerKey, countdown, start: startTimer, stop: stopTimer } = usePrayerTimes(getEntryForDate)
 const { schedulePrayers } = useNotifications()
 const { settings } = useSettings()
 
@@ -45,19 +45,25 @@ function updateDates() {
   gregorianDate.value = now.toLocaleDateString(locale, {
     weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
   })
-  try {
-    hijriDate.value = adjusted.toLocaleDateString(`${locale.split('-')[0]}-u-ca-islamic-umalqura`, {
-      day: 'numeric', month: 'long', year: 'numeric',
-    })
-  } catch {
+  const lang = locale.split('-')[0]
+  const islamicCals = ['islamic-umalqura', 'islamic-civil', 'islamic']
+  let hijri = ''
+  for (const cal of islamicCals) {
     try {
-      hijriDate.value = adjusted.toLocaleDateString(`${locale.split('-')[0]}-u-ca-islamic`, {
-        day: 'numeric', month: 'long', year: 'numeric',
-      })
-    } catch {
-      hijriDate.value = ''
+      hijri = adjusted.toLocaleDateString(`${lang}-u-ca-${cal}`, { day: 'numeric', month: 'long', year: 'numeric' })
+      if (hijri) break
+    } catch {}
+  }
+  if (!hijri && lang !== 'en') {
+    // Fallback to English when the locale doesn't support Islamic calendar
+    for (const cal of islamicCals) {
+      try {
+        hijri = adjusted.toLocaleDateString(`en-u-ca-${cal}`, { day: 'numeric', month: 'long', year: 'numeric' })
+        if (hijri) break
+      } catch {}
     }
   }
+  hijriDate.value = hijri
 }
 
 const countdownStr = computed(() => {
@@ -74,7 +80,7 @@ async function share() {
     prayers:         prayers.value,
     hijriDate:       hijriDate.value,
     gregorianDate:   gregorianDate.value,
-    city:            settings.district || city.value,
+    city:            getLocalDistrict(settings.district, settings.language) || city.value,
     nextPrayerIndex: nextPrayerIndex.value,
     language:        settings.language,
   })
@@ -83,6 +89,7 @@ async function share() {
 // ── Watchers ───────────────────────────────────────────────────────────────
 
 watch(prayers, (val) => { if (val.length) schedulePrayers(val) }, { deep: true })
+watch(() => settings.notificationsEnabled, () => { if (prayers.value.length) schedulePrayers(prayers.value) })
 watch(() => settings.dateAdjustment, updateDates)
 watch(() => settings.language, updateDates)
 
@@ -102,7 +109,7 @@ watch(() => settings.textSize, applyTextSize)
 // ── Lifecycle ──────────────────────────────────────────────────────────────
 
 // Tag zone in OneSignal whenever it changes (so server knows who to notify)
-watch(() => settings.zone, (zone) => tagZone(zone), { immediate: false })
+watch(() => settings.zone, (zone) => { tagZone(zone); startTimer() }, { immediate: false })
 
 async function applyLocation() {
   await getLocation()
@@ -158,7 +165,6 @@ function onTouchEnd(e) {
     <CalendarView
       v-if="subView === 'calendar'"
       key="calendar"
-      :coords="coords"
       @back="goBack"
     />
 
@@ -180,7 +186,7 @@ function onTouchEnd(e) {
     <!-- Home -->
     <div v-else key="home" class="pb-8 flex flex-col gap-6 page-content">
       <AppHeader
-        :city="settings.district || city"
+        :city="getLocalDistrict(settings.district, settings.language) || city"
         @open-calendar="goTo('calendar')"
         @open-settings="goTo('settings')"
         @open-location="goTo('location')"

@@ -82,9 +82,6 @@ function selectDistrict(item) {
             :selected="settings.locationMode === 'auto'"
             @select="selectAuto"
           />
-          <p v-if="locationPermission !== 'granted'" class="text-xs text-muted text-center mt-1.5">
-            {{ locationPermission === 'denied' ? t.locationPermDenied : t.locationPermRequired }}
-          </p>
         </div>
 
         <!-- District list -->

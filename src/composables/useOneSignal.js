@@ -42,11 +42,12 @@ export async function requestOneSignalPermission() {
     }
   } catch {}
 
-  // Then let OneSignal sync its state (non-blocking)
+  // Sync OneSignal state fire-and-forget — do NOT await, so Chrome doesn't
+  // count this as a second permission operation before geolocation is requested
   try {
     const OneSignal = window.OneSignal
     if (OneSignal?.Notifications) {
-      await OneSignal.Notifications.requestPermission()
+      OneSignal.Notifications.requestPermission().catch(() => {})
     }
   } catch {}
 

@@ -1,19 +1,19 @@
 <script setup>
 import { ref, computed } from 'vue'
-import { Coordinates, CalculationMethod, PrayerTimes } from 'adhan'
 import { Share2, ChevronRight,ChevronLeft } from 'lucide-vue-next'
 import PrayerIcon from './PrayerIcon.vue'
 import PageHeader from './PageHeader.vue'
 import { useSettings } from '../composables/useSettings.js'
 import { useI18n } from '../composables/useI18n.js'
+import { usePrayerData, getLocalDistrict } from '../composables/usePrayerData.js'
 import { PRAYER_NAMES } from '../constants/prayerNames.js'
 import { shareAsImage } from '../composables/useShareImage.js'
 
-const props = defineProps({ coords: { type: Object, default: null } })
 defineEmits(['back'])
 
 const { settings } = useSettings()
 const { t } = useI18n()
+const { getEntryForDate } = usePrayerData()
 
 const today         = new Date()
 const selectedDate  = ref(new Date(today))
@@ -36,7 +36,10 @@ function hijriParts(date) {
   return { day: 1, month: 1, year: 1 }
 }
 function hijriMonthName(date, lang) {
-  for (const cal of CAL) { try { return new Intl.DateTimeFormat(`${lang}-u-ca-${cal}`, { month: 'long' }).format(date) } catch {} }
+  for (const cal of CAL) { try { const s = new Intl.DateTimeFormat(`${lang}-u-ca-${cal}`, { month: 'long' }).format(date); if (s) return s } catch {} }
+  if (lang !== 'en') {
+    for (const cal of CAL) { try { const s = new Intl.DateTimeFormat(`en-u-ca-${cal}`, { month: 'long' }).format(date); if (s) return s } catch {} }
+  }
   return ''
 }
 function monthStart(anchor) {
@@ -100,21 +103,51 @@ function nextMonth() {
 
 // ── Prayer times for selected day ──────────────────────────────────────────
 const KEYS = ['fajr', 'sunrise', 'dhuhr', 'asr', 'maghrib', 'isha']
-function fmt(d) { return d.toLocaleTimeString(locale.value, { hour: 'numeric', minute: '2-digit', hour12: true }) }
+
+function parseTime(str, refDate) {
+  if (!str) return null
+  const s = str.trim()
+  const m12 = s.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i)
+  if (m12) {
+    let h = parseInt(m12[1])
+    const min = parseInt(m12[2])
+    const isPM = m12[3].toUpperCase() === 'PM'
+    if (isPM && h !== 12) h += 12
+    if (!isPM && h === 12) h = 0
+    const d = new Date(refDate)
+    d.setHours(h, min, 0, 0)
+    return d
+  }
+  const m24 = s.match(/^(\d{1,2}):(\d{2})$/)
+  if (m24) {
+    const d = new Date(refDate)
+    d.setHours(parseInt(m24[1]), parseInt(m24[2]), 0, 0)
+    return d
+  }
+  return null
+}
+
+function fmtDate(d) { return d.toLocaleTimeString(locale.value, { hour: 'numeric', minute: '2-digit', hour12: true }) }
 
 const selPrayers = computed(() => {
-  if (!props.coords) return []
-  const { lat, lon } = props.coords
-  const times = new PrayerTimes(new Coordinates(lat, lon), selectedDate.value, CalculationMethod.MoonsightingCommittee())
+  const entry = getEntryForDate(selectedDate.value)
+  if (!entry) return []
   const names = PRAYER_NAMES[settings.language] ?? PRAYER_NAMES.en
-  return KEYS.map(k => ({ key: k, name: names[k] ?? k, timeStr: fmt(times[k]) }))
+  return KEYS.map(k => {
+    const time = parseTime(entry[k], selectedDate.value)
+    return { key: k, name: names[k] ?? k, timeStr: time ? fmtDate(time) : '--:--' }
+  })
 })
 
 const nextIdx = computed(() => {
-  if (!props.coords || selectedDate.value.toDateString() !== today.toDateString()) return -1
-  const times = new PrayerTimes(new Coordinates(props.coords.lat, props.coords.lon), today, CalculationMethod.MoonsightingCommittee())
+  if (selectedDate.value.toDateString() !== today.toDateString()) return -1
+  const entry = getEntryForDate(today)
+  if (!entry) return -1
   const now = new Date()
-  return KEYS.findIndex(k => times[k] > now)
+  return KEYS.findIndex(k => {
+    const t = parseTime(entry[k], today)
+    return t && t > now
+  })
 })
 
 const selHijri = computed(() => { const { day, year } = hijriParts(selectedDate.value); return `${day} ${hijriMonthName(selectedDate.value, langPrefix.value)} ${year}` })
@@ -125,7 +158,7 @@ async function share() {
     prayers:       selPrayers.value,
     hijriDate:     selHijri.value,
     gregorianDate: selGreg.value,
-    city:          settings.district || '',
+    city:          getLocalDistrict(settings.district, settings.language) || '',
     language:      settings.language,
   })
 }

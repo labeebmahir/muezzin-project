@@ -1,5 +1,4 @@
-import { ref, watch } from 'vue'
-import { Coordinates, CalculationMethod, PrayerTimes } from 'adhan'
+import { ref } from 'vue'
 
 const PRAYER_META = [
   { key: 'fajr',    name: 'Fajr',    icon: 'fajr',    hasIqama: true  },
@@ -42,72 +41,51 @@ function timeStrToDate(str, ref = new Date()) {
   return null
 }
 
+function buildFromTimetable(entry, date) {
+  return PRAYER_META.map((p) => {
+    const timeStr = entry[p.key] ?? ''
+    const iqamaStr = entry[`${p.key}_iqama`] ?? ''
+    const time = timeStrToDate(timeStr, date)
+    const iqamaTime = iqamaStr ? timeStrToDate(iqamaStr, date) : null
+
+    if (!time) {
+      return { ...p, time: new Date(0), timeStr: '--:--', iqamaStr: null }
+    }
+
+    // Use fixed offset if no iqama in timetable
+    const finalIqama = iqamaTime
+      ? iqamaTime
+      : (p.hasIqama ? new Date(time.getTime() + (IQAMA_OFFSETS[p.key] ?? 15) * 60000) : null)
+
+    return {
+      ...p,
+      time,
+      timeStr: fmt(time),
+      iqamaStr: finalIqama ? fmt(finalIqama) : null,
+    }
+  })
+}
+
 /**
- * @param {Ref<{lat,lon}|null>} coordsRef
- * @param {Function}            getTodayEntry  — () => timetable entry for today or null
+ * @param {Function} getEntry  — (date: Date) => timetable entry for that date, or null
  */
-export function usePrayerTimes(coordsRef, getTodayEntry = () => null) {
+export function usePrayerTimes(getEntry = () => null) {
   const prayers = ref([])
   const nextPrayerIndex = ref(-1)
   const nextPrayerName = ref('')
   const nextPrayerKey = ref('dhuhr')
   const countdown = ref({ h: 0, m: 0, s: 0 })
-  const source = ref('calculated') // 'calculated' | 'timetable'
+  const source = ref('timetable')
 
   let intervalId = null
-  let coordinates = null
-  let params = null
-
-  function buildFromCalculation(date) {
-    const times = new PrayerTimes(coordinates, date, params)
-    return PRAYER_META.map((p) => {
-      const time = times[p.key]
-      const offset = IQAMA_OFFSETS[p.key] ?? 15
-      const iqamaTime = p.hasIqama ? new Date(time.getTime() + offset * 60000) : null
-      return { ...p, time, timeStr: fmt(time), iqamaStr: iqamaTime ? fmt(iqamaTime) : null }
-    })
-  }
-
-  function buildFromTimetable(entry, date) {
-    return PRAYER_META.map((p) => {
-      const timeStr = entry[p.key] ?? ''
-      const iqamaStr = entry[`${p.key}_iqama`] ?? ''
-      const time = timeStrToDate(timeStr, date)
-      const iqamaTime = iqamaStr ? timeStrToDate(iqamaStr, date) : null
-
-      // Fall back to calculation if time is missing
-      if (!time && coordinates && params) {
-        const calc = new PrayerTimes(coordinates, date, params)
-        const fallbackTime = calc[p.key]
-        const offset = IQAMA_OFFSETS[p.key] ?? 15
-        const fallbackIqama = p.hasIqama ? new Date(fallbackTime.getTime() + offset * 60000) : null
-        return { ...p, time: fallbackTime, timeStr: fmt(fallbackTime), iqamaStr: fallbackIqama ? fmt(fallbackIqama) : null }
-      }
-
-      return {
-        ...p,
-        time: time ?? new Date(0),
-        timeStr: time ? fmt(time) : '--:--',
-        iqamaStr: iqamaTime ? fmt(iqamaTime) : (p.hasIqama ? null : null),
-      }
-    })
-  }
 
   function calculate() {
     const date = new Date()
-    const entry = getTodayEntry()
-
+    const entry = getEntry(date)
     if (entry) {
       source.value = 'timetable'
       prayers.value = buildFromTimetable(entry, date)
-    } else if (coordsRef.value) {
-      const { lat, lon } = coordsRef.value
-      coordinates = new Coordinates(lat, lon)
-      params = CalculationMethod.MoonsightingCommittee()
-      source.value = 'calculated'
-      prayers.value = buildFromCalculation(date)
     }
-
     updateNext()
   }
 
@@ -133,11 +111,12 @@ export function usePrayerTimes(coordsRef, getTodayEntry = () => null) {
     const idx = nextPrayerIndex.value
 
     if (idx === -1 || (idx === 0 && prayers.value[0]?.time <= now)) {
-      if (coordinates && params) {
-        const tomorrow = new Date()
-        tomorrow.setDate(tomorrow.getDate() + 1)
-        const tomorrowTimes = new PrayerTimes(coordinates, tomorrow, params)
-        target = tomorrowTimes.fajr
+      // After last prayer — count down to tomorrow's Fajr
+      const tomorrow = new Date()
+      tomorrow.setDate(tomorrow.getDate() + 1)
+      const tomorrowEntry = getEntry(tomorrow)
+      if (tomorrowEntry) {
+        target = timeStrToDate(tomorrowEntry.fajr, tomorrow)
       }
     } else {
       target = prayers.value[idx]?.time
@@ -165,8 +144,6 @@ export function usePrayerTimes(coordsRef, getTodayEntry = () => null) {
   function stop() {
     if (intervalId) clearInterval(intervalId)
   }
-
-  watch(coordsRef, (val) => { if (val) start() })
 
   return { prayers, nextPrayerIndex, nextPrayerName, nextPrayerKey, countdown, source, start, stop, calculate }
 }

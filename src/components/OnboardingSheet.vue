@@ -2,22 +2,24 @@
 import { ref, onMounted } from 'vue'
 import { Bell, MapPin, Home } from 'lucide-vue-next'
 import { useI18n } from '../composables/useI18n.js'
+import { useSettings } from '../composables/useSettings.js'
 import { requestOneSignalPermission } from '../composables/useOneSignal.js'
 
 const emit = defineEmits(['location-granted'])
 const { t } = useI18n()
+const { settings } = useSettings()
 
 // Steps: null = hidden, 'notification' | 'location' | 'install'
 const step = ref(null)
 const installPrompt = ref(null)
 const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream
 const isStandalone = window.matchMedia('(display-mode: standalone)').matches
+const geoPermState = ref('prompt') // 'prompt' | 'granted' | 'denied'
 
 // Sequence of steps to check
 function nextStep(current) {
   if (current === 'notification') {
-    if (typeof Notification !== 'undefined' && Notification.permission !== 'granted'
-        && !localStorage.getItem('muezzin_loc_granted')) {
+    if (geoPermState.value === 'prompt') {
       step.value = 'location'
     } else if (!isStandalone) {
       step.value = 'install'
@@ -37,17 +39,24 @@ function nextStep(current) {
   step.value = null
 }
 
-onMounted(() => {
+onMounted(async () => {
   // Capture install prompt before it auto-fires
   window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault()
     installPrompt.value = e
   })
 
+  // Check real geolocation permission state
+  const geoPerm = await navigator.permissions?.query({ name: 'geolocation' }).catch(() => null)
+  if (geoPerm) {
+    geoPermState.value = geoPerm.state
+    geoPerm.onchange = () => { geoPermState.value = geoPerm.state }
+  }
+
   // Determine first step to show
   if (typeof Notification !== 'undefined' && Notification.permission !== 'granted') {
     step.value = 'notification'
-  } else if (!localStorage.getItem('muezzin_loc_granted')) {
+  } else if (geoPermState.value === 'prompt') {
     step.value = 'location'
   } else if (!isStandalone) {
     step.value = 'install'
@@ -57,18 +66,22 @@ onMounted(() => {
 // ── Actions ──────────────────────────────────────────────────────────────────
 
 async function allowNotification() {
-  await requestOneSignalPermission()
+  const granted = await requestOneSignalPermission()
+  if (granted) settings.notificationsEnabled = true
   nextStep('notification')
 }
 
 async function allowLocation() {
   try {
     await new Promise((res, rej) => {
-      navigator.geolocation.getCurrentPosition(res, rej, { timeout: 8000 })
+      navigator.geolocation.getCurrentPosition(res, rej, { timeout: 10000 })
     })
-    localStorage.setItem('muezzin_loc_granted', 'true')
+    geoPermState.value = 'granted'
     emit('location-granted')
-  } catch {}
+  } catch {
+    const perm = await navigator.permissions?.query({ name: 'geolocation' }).catch(() => null)
+    if (perm) geoPermState.value = perm.state
+  }
   nextStep('location')
 }
 

@@ -1,50 +1,85 @@
-import { Coordinates, CalculationMethod, PrayerTimes } from 'adhan'
+import { readFileSync } from 'fs'
+import { dirname, join } from 'path'
+import { fileURLToPath } from 'url'
 
-// Approximate coordinates for each ACJU zone
-const ZONE_COORDS = {
-  '01': { lat: 6.9271, lon: 79.8612 }, // Colombo / Gampaha / Kalutara
-  '02': { lat: 7.2906, lon: 80.6337 }, // Kandy
-  '03': { lat: 7.4675, lon: 80.6234 }, // Matale
-  '04': { lat: 6.9497, lon: 80.7891 }, // Nuwara Eliya
-  '05': { lat: 6.0535, lon: 80.2210 }, // Galle / Matara
-  '06': { lat: 6.1241, lon: 81.1185 }, // Hambantota
-  '07': { lat: 9.6615, lon: 80.0255 }, // Jaffna
-  '08': { lat: 9.3803, lon: 80.3770 }, // Kilinochchi / Mullaitivu / Mannar
-  '09': { lat: 8.7514, lon: 80.4972 }, // Vavuniya
-  '10': { lat: 8.5874, lon: 81.2152 }, // Trincomalee
-  '11': { lat: 7.7170, lon: 81.6924 }, // Batticaloa / Ampara
-  '12': { lat: 6.9934, lon: 81.0550 }, // Badulla / Monaragala
-  '13': { lat: 8.3000, lon: 80.4000 }, // Puttalam / Kurunegala
-}
+const __dirname = dirname(fileURLToPath(import.meta.url))
 
+const ZONES = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12', '13']
 const PRAYER_KEYS = ['fajr', 'dhuhr', 'asr', 'maghrib', 'isha']
 const PRAYER_NAMES = {
   fajr: 'Fajr', dhuhr: 'Luhar', asr: 'Asar', maghrib: 'Magrib', isha: 'Isha',
 }
 const REMINDER_MINUTES = 10
-const WINDOW_MINUTES = 5 // check window — run cron every 5 min
+const WINDOW_MINUTES   = 5
+const TZ               = 'Asia/Colombo' // UTC+5:30
+
+// Get today's date string (YYYY-MM-DD) in Sri Lanka time
+function slDateStr(d) {
+  return new Intl.DateTimeFormat('en-CA', { timeZone: TZ }).format(d)
+}
+
+function normalise(row) {
+  const out = {}
+  for (const [k, v] of Object.entries(row)) {
+    const key = k.toLowerCase().trim()
+    const canon =
+      key === 'luhar'  ? 'dhuhr' :
+      key === 'magrib' ? 'maghrib' : key
+    out[canon] = v
+  }
+  return out
+}
+
+function loadZoneRows(zone) {
+  const path = join(__dirname, '..', 'src', 'data', `zone-${zone}.json`)
+  const raw = JSON.parse(readFileSync(path, 'utf-8'))
+  const arr = Array.isArray(raw) ? raw : (raw.times ?? [])
+  return arr.map(normalise)
+}
+
+function parseTime(str, refDate) {
+  if (!str) return null
+  const s = str.trim()
+  let h, min
+  const m12 = s.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i)
+  if (m12) {
+    h = parseInt(m12[1])
+    min = parseInt(m12[2])
+    const isPM = m12[3].toUpperCase() === 'PM'
+    if (isPM && h !== 12) h += 12
+    if (!isPM && h === 12) h = 0
+  } else {
+    const m24 = s.match(/^(\d{1,2}):(\d{2})$/)
+    if (!m24) return null
+    h = parseInt(m24[1])
+    min = parseInt(m24[2])
+  }
+  // Build a Date in Sri Lanka time (UTC+5:30)
+  const dateStr = slDateStr(refDate)
+  return new Date(`${dateStr}T${String(h).padStart(2,'0')}:${String(min).padStart(2,'0')}:00+05:30`)
+}
 
 export default async function handler(req, res) {
-  // Simple auth via secret query param or Authorization header
   const secret = req.query.secret || req.headers['authorization']?.replace('Bearer ', '')
   if (secret !== process.env.CRON_SECRET) {
     return res.status(401).json({ error: 'Unauthorized' })
   }
 
   const now = new Date()
+  const today = slDateStr(now) // Sri Lanka local date
   const windowMs = WINDOW_MINUTES * 60 * 1000
   const sent = []
 
-  for (const [zone, coords] of Object.entries(ZONE_COORDS)) {
-    const coordinates = new Coordinates(coords.lat, coords.lon)
-    const params = CalculationMethod.MoonsightingCommittee()
-    const times = new PrayerTimes(coordinates, now, params)
+  for (const zone of ZONES) {
+    const rows = loadZoneRows(zone)
+    const entry = rows.find((r) => r.date === today)
+    if (!entry) continue
 
     for (const key of PRAYER_KEYS) {
-      const prayerTime = times[key]
-      // Fire notification REMINDER_MINUTES before prayer
-      const reminderTime = new Date(prayerTime.getTime() - REMINDER_MINUTES * 60_000)
+      const prayerTime = parseTime(entry[key], now)
+      if (!prayerTime) continue
 
+      const reminderTime = new Date(prayerTime.getTime() - REMINDER_MINUTES * 60_000)
       const diff = reminderTime.getTime() - now.getTime()
       if (diff >= 0 && diff < windowMs) {
         const timeStr = prayerTime.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })

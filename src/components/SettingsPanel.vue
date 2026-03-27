@@ -10,10 +10,13 @@ import SettingsRow from './SettingsRow.vue'
 import SelectOption from './SelectOption.vue'
 import { useSettings } from '../composables/useSettings.js'
 import { useI18n } from '../composables/useI18n.js'
+import { useNotifications } from '../composables/useNotifications.js'
+import { getLocalDistrict } from '../composables/usePrayerData.js'
 
 const emit = defineEmits(['back', 'open-location'])
 const { settings } = useSettings()
 const { t } = useI18n()
+const { previewSound } = useNotifications()
 
 // ── Notification permission + test ───────────────────────────────────────────
 const notifPermission = ref(typeof Notification !== 'undefined' ? Notification.permission : 'denied')
@@ -57,12 +60,23 @@ const soundLabel = computed(() => {
 const hijriLabel = computed(() => {
   const d = new Date()
   d.setDate(d.getDate() + (settings.dateAdjustment ?? 0))
-  const locale = { en: 'en', ta: 'ta', si: 'si' }[settings.language] ?? 'en'
-  try {
-    return d.toLocaleDateString(`${locale}-u-ca-islamic-umalqura`, { day: 'numeric', month: 'long', year: 'numeric' })
-  } catch {
-    return d.toLocaleDateString(`${locale}-u-ca-islamic`, { day: 'numeric', month: 'long', year: 'numeric' })
+  const lang = { en: 'en', ta: 'ta', si: 'si' }[settings.language] ?? 'en'
+  const cals = ['islamic-umalqura', 'islamic-civil', 'islamic']
+  for (const cal of cals) {
+    try {
+      const s = d.toLocaleDateString(`${lang}-u-ca-${cal}`, { day: 'numeric', month: 'long', year: 'numeric' })
+      if (s) return s
+    } catch {}
   }
+  if (lang !== 'en') {
+    for (const cal of cals) {
+      try {
+        const s = d.toLocaleDateString(`en-u-ca-${cal}`, { day: 'numeric', month: 'long', year: 'numeric' })
+        if (s) return s
+      } catch {}
+    }
+  }
+  return ''
 })
 
 // ── Feedback ────────────────────────────────────────────────────────────────
@@ -151,7 +165,7 @@ async function submitFeedback() {
           </SettingsRow>
 
           <!-- Location -->
-          <SettingsRow :title="t.location" :subtitle="settings.district || t.locationAuto" :on-click="() => emit('open-location')">
+          <SettingsRow :title="t.location" :subtitle="getLocalDistrict(settings.district, settings.language) || t.locationAuto" :on-click="() => emit('open-location')">
             <template #icon><MapPin :size="18" stroke-width="1.5" /></template>
             <template #right><ChevronRight :size="15" class="text-muted shrink-0" /></template>
           </SettingsRow>
@@ -225,7 +239,7 @@ async function submitFeedback() {
             </svg>
             <p class="text-[18px] text-fg">Muezzin</p>
           </div>
-          <p class="text-xs text-muted">{{ t.version }} 2.0.0</p>
+          <p class="text-xs text-muted">{{ t.version }} 1.0.0</p>
           <p class="text-xs text-muted text-center px-8 leading-relaxed mt-2">
             {{ t.disclaimer }}
           </p>
@@ -265,7 +279,7 @@ async function submitFeedback() {
       <div class="flex flex-col gap-2.5 px-4">
         <SelectOption
           v-for="m in REMINDERS" :key="m"
-          :label="m + ' minutes before'"
+          :label="m + ' ' + t.minutesBefore"
           :selected="settings.reminderMinutes === m"
           @select="settings.reminderMinutes = m"
         />
@@ -280,7 +294,7 @@ async function submitFeedback() {
           v-for="opt in [{value:'azan',label:t.soundAzan},{value:'default',label:t.soundDefault},{value:'silent',label:t.soundSilent}]" :key="opt.value"
           :label="opt.label"
           :selected="settings.reminderSound === opt.value"
-          @select="settings.reminderSound = opt.value"
+          @select="settings.reminderSound = opt.value; previewSound(opt.value)"
         />
       </div>
     </div>

@@ -1,4 +1,5 @@
 import { useSettings } from './useSettings.js'
+import { getLocalDistrict } from './usePrayerData.js'
 
 let activeAudio = null
 let timeouts = []
@@ -95,7 +96,7 @@ export function useNotifications() {
   function notify(prayer) {
     if (Notification.permission !== 'granted') return
     const mins = settings.reminderMinutes ?? 10
-    const district = settings.district || 'your area'
+    const district = getLocalDistrict(settings.district, settings.language) || 'your area'
     new Notification(`${prayer.name} in ${mins} min`, {
       body: `${prayer.name} prayer is at ${prayer.timeStr} in ${district}.`,
       icon: '/icons/icon-192.png',
@@ -124,5 +125,10 @@ export function useNotifications() {
     }
   }
 
-  return { requestPermission, schedulePrayers, stopAdhan }
+  function previewSound(soundType) {
+    stopAdhan()
+    if (soundType === 'azan') playAdhan('dhuhr')
+  }
+
+  return { requestPermission, schedulePrayers, stopAdhan, previewSound }
 }
