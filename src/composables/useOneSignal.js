@@ -2,12 +2,15 @@ const APP_ID     = '534c151d-5409-43cf-956e-55de3110cec2'
 const SAFARI_ID  = 'web.onesignal.auto.081d2360-74df-41b0-afe2-959ef72fcc8c'
 
 let initialised = false
+let oneSignalInstance = null
+let initPromise = null
 
 export async function initOneSignal() {
   if (initialised || typeof window === 'undefined') return
+  if (initPromise) return initPromise
   if (!window.OneSignalDeferred) window.OneSignalDeferred = []
 
-  await new Promise((resolve) => {
+  initPromise = new Promise((resolve) => {
     window.OneSignalDeferred.push(async (OneSignal) => {
       try {
         await OneSignal.init({
@@ -21,6 +24,7 @@ export async function initOneSignal() {
             slidedown: { prompts: [] }, // disable default prompts
           },
         })
+        oneSignalInstance = OneSignal
         initialised = true
       } catch (e) {
         console.warn('[OneSignal] init failed', e)
@@ -28,6 +32,8 @@ export async function initOneSignal() {
       resolve()
     })
   })
+
+  return initPromise
 }
 
 export async function requestOneSignalPermission() {
@@ -42,14 +48,16 @@ export async function requestOneSignalPermission() {
     }
   } catch {}
 
-  // Sync OneSignal state fire-and-forget — do NOT await, so Chrome doesn't
-  // count this as a second permission operation before geolocation is requested
-  try {
-    const OneSignal = window.OneSignal
-    if (OneSignal?.Notifications) {
-      OneSignal.Notifications.requestPermission().catch(() => {})
-    }
-  } catch {}
+  if (granted) {
+    // Wait up to 4 s for OneSignal to finish initialising, then register subscription
+    try {
+      if (!initialised && initPromise) await Promise.race([initPromise, new Promise(r => setTimeout(r, 4000))])
+      const os = oneSignalInstance ?? window.OneSignal
+      if (os?.Notifications) {
+        await os.Notifications.requestPermission().catch(() => {})
+      }
+    } catch {}
+  }
 
   return granted
 }

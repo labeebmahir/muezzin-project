@@ -43,6 +43,11 @@ const viewTx = ref('slide-forward')
 function openView(v) { viewTx.value = 'slide-forward'; view.value = v }
 function backToMain() { viewTx.value = 'slide-back';  view.value = 'main' }
 
+defineExpose({
+  isOnSubView: computed(() => view.value !== 'main'),
+  swipeBack: () => { if (view.value !== 'main') backToMain() },
+})
+
 // ── Options ─────────────────────────────────────────────────────────────────
 const LANGUAGES  = [{ code: 'en', label: 'English' }, { code: 'ta', label: 'தமிழ்' }, { code: 'si', label: 'සිංහල' }]
 const REMINDERS  = [5, 10, 15, 20, 30]

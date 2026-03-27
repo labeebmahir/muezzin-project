@@ -15,6 +15,7 @@ import { useNotifications } from './composables/useNotifications.js'
 import { usePrayerData, getLocalDistrict } from './composables/usePrayerData.js'
 import { useSettings } from './composables/useSettings.js'
 import { shareAsImage } from './composables/useShareImage.js'
+import { PRAYER_NAMES } from './constants/prayerNames.js'
 
 const subView = ref('home') // 'home' | 'calendar' | 'settings' | 'location'
 const pageTx  = ref('slide-forward')
@@ -65,6 +66,10 @@ function updateDates() {
   }
   hijriDate.value = hijri
 }
+
+const nextPrayerNameLocal = computed(() =>
+  PRAYER_NAMES[settings.language]?.[nextPrayerKey.value] ?? nextPrayerName.value
+)
 
 const countdownStr = computed(() => {
   const { h, m, s } = countdown.value
@@ -138,17 +143,24 @@ onUnmounted(() => stopTimer())
 let touchStartX = 0
 let touchStartY = 0
 
+const settingsPanelRef = ref(null)
+
 function onTouchStart(e) {
   touchStartX = e.touches[0].clientX
   touchStartY = e.touches[0].clientY
 }
 
 function onTouchEnd(e) {
-  if (subView.value === 'home') return
   const dx = e.changedTouches[0].clientX - touchStartX
   const dy = Math.abs(e.changedTouches[0].clientY - touchStartY)
   // Right swipe: horizontal ≥ 60px, more horizontal than vertical
-  if (dx >= 60 && dy < dx * 0.8) goBack()
+  if (dx >= 60 && dy < dx * 0.8) {
+    if (subView.value === 'settings' && settingsPanelRef.value?.isOnSubView) {
+      settingsPanelRef.value.swipeBack()
+      return
+    }
+    if (subView.value !== 'home') goBack()
+  }
 }
 </script>
 
@@ -179,6 +191,7 @@ function onTouchEnd(e) {
     <SettingsPanel
       v-else-if="subView === 'settings'"
       key="settings"
+      ref="settingsPanelRef"
       @back="goBack"
       @open-location="goTo('location')"
     />
@@ -192,7 +205,7 @@ function onTouchEnd(e) {
         @open-location="goTo('location')"
       />
 
-      <HeroCard :next-prayer="nextPrayerName" :countdown="countdownStr" :next-prayer-key="nextPrayerKey" />
+      <HeroCard :next-prayer="nextPrayerNameLocal" :countdown="countdownStr" :next-prayer-key="nextPrayerKey" />
 
       <!-- Date row -->
       <div class="flex items-center justify-between px-4">
