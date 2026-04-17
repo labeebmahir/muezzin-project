@@ -1,6 +1,9 @@
 import { precacheAndRoute, cleanupOutdatedCaches } from 'workbox-precaching'
 import { clientsClaim } from 'workbox-core'
 
+// OneSignal must be imported before any Workbox code runs
+importScripts('https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.sw.js')
+
 self.skipWaiting()
 clientsClaim()
 

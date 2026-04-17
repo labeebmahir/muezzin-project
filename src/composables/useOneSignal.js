@@ -16,9 +16,9 @@ export async function initOneSignal() {
         await OneSignal.init({
           appId: APP_ID,
           safari_web_id: SAFARI_ID,
-          // Use a separate scope so it doesn't conflict with our Workbox SW
-          serviceWorkerParam: { scope: '/push/onesignal/' },
-          serviceWorkerPath:  '/push/onesignal/OneSignalSDKWorker.js',
+          // Point to our Workbox SW (which now importScripts OneSignal's SW code)
+          serviceWorkerPath:  '/sw.js',
+          serviceWorkerParam: { scope: '/' },
           notifyButton: { enable: false }, // we handle permission in onboarding
           promptOptions: {
             slidedown: { prompts: [] }, // disable default prompts
