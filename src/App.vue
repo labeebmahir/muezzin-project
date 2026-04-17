@@ -9,7 +9,7 @@ import LocationPage from './components/LocationPage.vue'
 import SettingsPanel from './components/SettingsPanel.vue'
 import OnboardingSheet from './components/OnboardingSheet.vue'
 import { useLocation } from './composables/useLocation.js'
-import { initOneSignal, tagZone } from './composables/useOneSignal.js'
+import { initOneSignal, tagZone, requestOneSignalPermission } from './composables/useOneSignal.js'
 import { usePrayerTimes } from './composables/usePrayerTimes.js'
 import { useNotifications } from './composables/useNotifications.js'
 import { usePrayerData, getLocalDistrict } from './composables/usePrayerData.js'
@@ -138,8 +138,13 @@ onMounted(async () => {
   applyTheme()
   applyTextSize()
   updateDates()
-  // Init OneSignal early so it's ready when user taps Allow in onboarding
-  initOneSignal().then(() => tagZone(settings.zone))
+  // Init OneSignal, then ensure subscription is registered if permission already granted
+  initOneSignal().then(async () => {
+    tagZone(settings.zone)
+    if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
+      await requestOneSignalPermission()
+    }
+  })
   // Only auto-locate if permission already granted (don't prompt on load)
   const perm = await navigator.permissions?.query({ name: 'geolocation' }).catch(() => null)
   if (perm?.state === 'granted') await applyLocation()
