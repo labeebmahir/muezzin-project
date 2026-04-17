@@ -121,11 +121,12 @@ watch(() => settings.zone, (zone) => { tagZone(zone); startTimer() }, { immediat
 
 const locationPageRef = ref(null)
 
-async function applyLocation() {
+async function applyLocation({ force = false } = {}) {
   await getLocation()
-  if (settings.locationMode === 'auto' && detectedZone.value) {
+  if ((force || settings.locationMode === 'auto') && detectedZone.value) {
     settings.zone = detectedZone.value
     settings.district = detectedDistrict.value
+    settings.locationMode = 'auto'
   }
   locationPageRef.value?.doneLocating()
 }
@@ -172,7 +173,7 @@ function onTouchEnd(e) {
 
 <template>
   <!-- Onboarding -->
-  <OnboardingSheet @location-granted="applyLocation" />
+  <OnboardingSheet @location-granted="applyLocation({ force: true })" />
 
   <div class="relative overflow-x-hidden min-h-screen"
     @touchstart.passive="onTouchStart"
@@ -225,7 +226,7 @@ function onTouchEnd(e) {
         <button
           @click="share"
           aria-label="Share prayer times"
-          class="p-1.5 rounded-lg text-muted hover:text-fg hover:bg-white/10 transition-colors"
+          class="p-1.5 rounded-lg text-muted hover:text-fg hover:bg-fg/10 transition-colors"
         >
           <Share2 :size="22" stroke-width="1.5" />
         </button>

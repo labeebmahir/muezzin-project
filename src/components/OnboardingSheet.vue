@@ -1,105 +1,90 @@
 <script setup>
 import { ref, onMounted } from 'vue'
-import { Bell, MapPin, Home } from 'lucide-vue-next'
+import { Home, MapPin, Bell } from 'lucide-vue-next'
 import { useI18n } from '../composables/useI18n.js'
-import { useSettings } from '../composables/useSettings.js'
+import { installPromptEvent } from '../composables/useInstallPrompt.js'
 import { requestOneSignalPermission } from '../composables/useOneSignal.js'
+import { useSettings } from '../composables/useSettings.js'
 
 const emit = defineEmits(['location-granted'])
 const { t } = useI18n()
 const { settings } = useSettings()
 
-// Steps: null = hidden, 'notification' | 'location' | 'install'
 const step = ref(null)
-const installPrompt = ref(null)
 const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream
 const isStandalone = window.matchMedia('(display-mode: standalone)').matches
-const geoPermState = ref('prompt') // 'prompt' | 'granted' | 'denied'
+const geoPermState = ref('prompt')
 
-// Sequence of steps to check
-function nextStep(current) {
-  if (current === 'notification') {
-    if (geoPermState.value === 'prompt') {
-      step.value = 'location'
-    } else if (!isStandalone) {
-      step.value = 'install'
-    } else {
-      step.value = null
-    }
-    return
-  }
-  if (current === 'location') {
-    if (!isStandalone) {
-      step.value = 'install'
-    } else {
-      step.value = null
-    }
-    return
-  }
-  step.value = null
-}
+const locationDone = !!localStorage.getItem('muezzin_location_done')
 
 onMounted(async () => {
-  // Capture install prompt before it auto-fires
-  window.addEventListener('beforeinstallprompt', (e) => {
-    e.preventDefault()
-    installPrompt.value = e
-  })
 
-  // Check real geolocation permission state
   const geoPerm = await navigator.permissions?.query({ name: 'geolocation' }).catch(() => null)
   if (geoPerm) {
     geoPermState.value = geoPerm.state
     geoPerm.onchange = () => { geoPermState.value = geoPerm.state }
   }
 
-  // Determine first step to show
-  if (typeof Notification !== 'undefined' && Notification.permission !== 'granted') {
-    step.value = 'notification'
-  } else if (geoPermState.value === 'prompt') {
-    step.value = 'location'
-  } else if (!isStandalone) {
+  const needsInstall = !isStandalone
+  const needsLocation = !locationDone && (geoPermState.value === 'prompt' || !geoPerm)
+  const needsNotif = typeof Notification !== 'undefined' && Notification.permission !== 'granted'
+
+  if (needsInstall) {
     step.value = 'install'
+  } else if (needsLocation) {
+    step.value = 'location'
+  } else if (needsNotif) {
+    step.value = 'notification'
   }
 })
 
 // ── Actions ──────────────────────────────────────────────────────────────────
 
-async function allowNotification() {
-  const granted = await requestOneSignalPermission()
-  if (granted) settings.notificationsEnabled = true
-  nextStep('notification')
+function notifNeeded() {
+  return typeof Notification !== 'undefined' && Notification.permission !== 'granted'
 }
 
-async function allowLocation() {
-  try {
-    await new Promise((res, rej) => {
-      navigator.geolocation.getCurrentPosition(res, rej, { timeout: 10000 })
-    })
-    geoPermState.value = 'granted'
-    emit('location-granted')
-  } catch {
-    const perm = await navigator.permissions?.query({ name: 'geolocation' }).catch(() => null)
-    if (perm) geoPermState.value = perm.state
-  }
-  nextStep('location')
+function nextAfterLocation() {
+  step.value = notifNeeded() ? 'notification' : null
+}
+
+function afterInstall() {
+  const needsLocation = !locationDone && (geoPermState.value === 'prompt' || !navigator.permissions)
+  if (needsLocation) { step.value = 'location'; return }
+  nextAfterLocation()
 }
 
 async function installApp() {
-  if (installPrompt.value) {
-    installPrompt.value.prompt()
-    const { outcome } = await installPrompt.value.userChoice
-    if (outcome === 'accepted') {
-      localStorage.setItem('muezzin_install_done', 'true')
-    }
-    installPrompt.value = null
+  if (installPromptEvent.value) {
+    installPromptEvent.value.prompt()
+    const { outcome } = await installPromptEvent.value.userChoice
+    installPromptEvent.value = null
+    if (outcome === 'accepted') { step.value = null; return }
   }
-  step.value = null
+  afterInstall()
 }
 
-function dismissInstall() {
-  localStorage.setItem('muezzin_install_done', 'true')
+function skipLocation() {
+  localStorage.setItem('muezzin_location_done', 'true')
+  nextAfterLocation()
+}
+
+function allowLocation() {
+  skipLocation()
+  navigator.geolocation.getCurrentPosition(
+    () => { geoPermState.value = 'granted'; emit('location-granted') },
+    async () => {
+      const perm = await navigator.permissions?.query({ name: 'geolocation' }).catch(() => null)
+      if (perm) geoPermState.value = perm.state
+    },
+    { timeout: 10000 }
+  )
+}
+
+async function allowNotification() {
   step.value = null
+  const granted = await requestOneSignalPermission()
+  if (granted) settings.notificationsEnabled = true
 }
 </script>
 
@@ -113,27 +98,8 @@ function dismissInstall() {
       <Transition name="slide-up" appear>
         <div class="relative w-full max-w-120 bg-card rounded-t-3xl px-6 pt-8 pb-10 flex flex-col items-center gap-5 text-center">
 
-          <!-- ── Notification Permission ── -->
-          <template v-if="step === 'notification'">
-            <div class="w-16 h-16 rounded-xl bg-icon-bg border border-icon-bdr flex items-center justify-center">
-              <Bell :size="30" class="text-gold" stroke-width="1.5" />
-            </div>
-            <div>
-              <p class="text-[18px] font-bold text-fg">{{ t.notifPermTitle }}</p>
-              <p class="text-sm text-muted mt-2 leading-relaxed">{{ t.notifPermDesc }}</p>
-            </div>
-            <div class="flex gap-3 w-full pt-1">
-              <button class="flex-1 py-3.5 text-sm font-bold text-gold" @click="nextStep('notification')">
-                {{ t.skip }}
-              </button>
-              <button class="flex-1 py-3.5 rounded-xl bg-gold text-nt text-sm font-bold" @click="allowNotification">
-                {{ t.allow }}
-              </button>
-            </div>
-          </template>
-
           <!-- ── Location Permission ── -->
-          <template v-else-if="step === 'location'">
+          <template v-if="step === 'location'">
             <div class="w-16 h-16 rounded-xl bg-icon-bg border border-icon-bdr flex items-center justify-center">
               <MapPin :size="30" class="text-gold" stroke-width="1.5" />
             </div>
@@ -142,10 +108,29 @@ function dismissInstall() {
               <p class="text-sm text-muted mt-2 leading-relaxed">{{ t.locationPermDesc }}</p>
             </div>
             <div class="flex gap-3 w-full pt-1">
-              <button class="flex-1 py-3.5 text-sm font-bold text-gold" @click="nextStep('location')">
+              <button class="flex-1 py-3.5 text-sm font-bold text-gold" @click="skipLocation">
                 {{ t.skip }}
               </button>
               <button class="flex-1 py-3.5 rounded-xl bg-gold text-nt text-sm font-bold" @click="allowLocation">
+                {{ t.allow }}
+              </button>
+            </div>
+          </template>
+
+          <!-- ── Notification Permission ── -->
+          <template v-else-if="step === 'notification'">
+            <div class="w-16 h-16 rounded-xl bg-icon-bg border border-icon-bdr flex items-center justify-center">
+              <Bell :size="30" class="text-gold" stroke-width="1.5" />
+            </div>
+            <div>
+              <p class="text-[18px] font-bold text-fg">{{ t.notifPermTitle }}</p>
+              <p class="text-sm text-muted mt-2 leading-relaxed">{{ t.notifPermDesc }}</p>
+            </div>
+            <div class="flex gap-3 w-full pt-1">
+              <button class="flex-1 py-3.5 text-sm font-bold text-gold" @click="step = null">
+                {{ t.skip }}
+              </button>
+              <button class="flex-1 py-3.5 rounded-xl bg-gold text-nt text-sm font-bold" @click="allowNotification">
                 {{ t.allow }}
               </button>
             </div>
@@ -167,11 +152,11 @@ function dismissInstall() {
               </p>
             </div>
             <div class="flex gap-3 w-full pt-1">
-              <button class="flex-1 py-3.5 text-sm font-bold text-gold" @click="step = null">
+              <button class="flex-1 py-3.5 text-sm font-bold text-gold" @click="afterInstall">
                 {{ t.later }}
               </button>
               <button class="flex-1 py-3.5 rounded-xl bg-gold text-nt text-sm font-bold"
-                @click="isIOS ? dismissInstall() : (installPrompt ? installApp() : dismissInstall())">
+                @click="isIOS ? afterInstall() : (installPromptEvent ? installApp() : afterInstall())">
                 {{ isIOS ? t.done : t.add }}
               </button>
             </div>

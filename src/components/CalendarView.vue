@@ -42,13 +42,21 @@ function hijriMonthName(date, lang) {
   }
   return ''
 }
+
+function adj(d) {
+  const n = settings.dateAdjustment ?? 0
+  if (!n) return d
+  const a = new Date(d); a.setDate(a.getDate() + n); return a
+}
+
 function monthStart(anchor) {
-  const { day } = hijriParts(anchor)
+  const { day, year } = hijriParts(adj(anchor))
+  if (year < 1400) return anchor  // Intl Islamic calendar unsupported
   const est = new Date(anchor); est.setDate(est.getDate() - day + 1); est.setHours(12, 0, 0, 0)
-  for (let o = -2; o <= 2; o++) {
+  for (let o = -4; o <= 4; o++) {
     const c = new Date(est); c.setDate(c.getDate() + o)
     const prev = new Date(c); prev.setDate(prev.getDate() - 1)
-    if (hijriParts(c).day === 1 && hijriParts(prev).day !== 1) return c
+    if (hijriParts(adj(c)).day === 1 && hijriParts(adj(prev)).day !== 1) return c
   }
   return est
 }
@@ -58,13 +66,15 @@ const mStart = computed(() => monthStart(monthAnchor.value))
 
 const calDays = computed(() => {
   const start = mStart.value
-  const { month: mth, year: yr } = hijriParts(start)
+  const { month: mth, year: yr } = hijriParts(adj(start))
+  if (yr < 1400) return []  // Intl Islamic calendar unsupported on this device
   const days = []
   const startDow = (start.getDay() + 6) % 7
   for (let i = 0; i < startDow; i++) days.push(null)
   const d = new Date(start)
-  while (true) {
-    const { day, month, year } = hijriParts(d)
+  let limit = 0
+  while (limit++ < 32) {
+    const { day, month, year } = hijriParts(adj(d))
     if (month !== mth || year !== yr) break
     days.push({
       gregorianDate: new Date(d),
@@ -85,7 +95,7 @@ const weeks = computed(() => {
   return out
 })
 
-const monthHeader = computed(() => `${hijriMonthName(monthAnchor.value, langPrefix.value)} ${hijriParts(monthAnchor.value).year}`)
+const monthHeader = computed(() => `${hijriMonthName(adj(monthAnchor.value), langPrefix.value)} ${hijriParts(adj(monthAnchor.value)).year}`)
 const gregRange   = computed(() => {
   const real = calDays.value.filter(Boolean)
   if (!real.length) return ''
@@ -150,7 +160,7 @@ const nextIdx = computed(() => {
   })
 })
 
-const selHijri = computed(() => { const { day, year } = hijriParts(selectedDate.value); return `${day} ${hijriMonthName(selectedDate.value, langPrefix.value)} ${year}` })
+const selHijri = computed(() => { const { day, year } = hijriParts(adj(selectedDate.value)); return `${day} ${hijriMonthName(adj(selectedDate.value), langPrefix.value)} ${year}` })
 const selGreg  = computed(() => selectedDate.value.toLocaleDateString(locale.value, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }))
 
 async function share() {
@@ -171,7 +181,11 @@ async function share() {
 
     <div class="flex flex-col gap-8 px-4">
 
-      <div class="bg-card rounded-xl">
+      <div v-if="!weeks.length" class="bg-card rounded-xl p-6 text-center text-muted text-sm">
+        Hijri calendar is not supported on this browser.
+      </div>
+
+      <div v-else class="bg-card rounded-xl">
         <!-- Month navigator -->
         <div class="flex items-center justify-between p-4">
           <button class="p-1.5 rounded-lg text-muted hover:text-fg hover:bg-white/10 transition-colors"" @click="prevMonth">
@@ -179,7 +193,7 @@ async function share() {
           </button>
           <div class="text-center">
             <p class="text-base font-bold text-gold">{{ monthHeader }}</p>
-            <p class="text-sm mt-q">{{ gregRange }}</p>
+            <p class="text-sm mt-1">{{ gregRange }}</p>
           </div>
           <button class="p-1.5 rounded-lg text-muted hover:text-fg hover:bg-white/10 transition-colors"" @click="nextMonth">
             <ChevronRight :size="22" stroke-width="1.5" />
@@ -211,7 +225,7 @@ async function share() {
                 {{ day.hijriDay }}
               </span>
               <span class="text-xs leading-none"
-                :class="day.isToday ? 'text-card' : 'text-white'">
+                :class="day.isToday ? 'text-card' : 'text-muted'">
                 {{ day.gregShort }}
               </span>
               </template>

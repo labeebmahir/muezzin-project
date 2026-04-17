@@ -111,7 +111,7 @@ export function useNotifications() {
       activeAudio.pause()
       activeAudio = null
     }
-    const src = prayerKey === 'fajr' ? '/audio/adhan-fajr.mp3' : '/audio/adhan.mp3'
+    const src = '/audio/adhan.mp3'
     const audio = new Audio(src)
     audio.play().catch(() => {})
     activeAudio = audio

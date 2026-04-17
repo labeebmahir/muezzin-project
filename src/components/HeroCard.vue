@@ -25,7 +25,7 @@ const theme = computed(() => THEMES[props.nextPrayerKey] ?? THEMES.dhuhr)
 <template>
   <div
     class="relative mx-4 mt-2 rounded-[20px] overflow-hidden flex flex-col items-center gap-1.5 pt-7 transition-all duration-1000"
-    :style="{ background: theme.gradient, minHeight: '260px' }"
+    :style="{ background: theme.gradient, minHeight: '250px' }"
   >
     <!-- Stars -->
     <template v-if="theme.stars">

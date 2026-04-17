@@ -325,7 +325,7 @@ async function submitFeedback() {
           <div class="relative">
             <select
               v-model="feedbackType"
-              class="w-full appearance-none bg-nt rounded-xl px-4 py-3 text-sm text-fg outline-none transition-colors cursor-pointer pr-10"
+              class="w-full appearance-none bg-bg rounded-xl px-4 py-3 text-sm text-fg outline-none transition-colors cursor-pointer pr-10"
             >
               <option value="bug">{{ t.feedbackBug }}</option>
               <option value="suggestion">{{ t.feedbackSuggestion }}</option>
@@ -337,7 +337,7 @@ async function submitFeedback() {
             v-model="feedbackText"
             rows="6"
             v-bind:placeholder="t.feedbackPlaceholder"
-            class="w-full bg-nt rounded-xl px-4 py-3 text-sm text-fg placeholder:text-muted outline-none transition-colors resize-none"
+            class="w-full bg-bg rounded-xl px-4 py-3 text-sm text-fg placeholder:text-muted outline-none transition-colors resize-none"
           />
           <button
             class="w-full py-3.5 rounded-xl font-bold text-sm bg-gold text-nt transition-opacity"

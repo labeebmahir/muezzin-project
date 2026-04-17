@@ -6,7 +6,7 @@
     <button
       v-if="showBack"
       @click="$emit('back')"
-      class="absolute left-4 p-1.5 rounded-lg text-muted hover:text-fg hover:bg-white/10 transition-colors"
+      class="absolute left-4 p-1.5 rounded-lg text-muted hover:text-fg hover:bg-fg/10 transition-colors"
     >
       <ChevronLeft :size="22" stroke-width="1.5" />
     </button>

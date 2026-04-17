@@ -29,7 +29,7 @@ onUnmounted(() => window.removeEventListener('scroll', onScroll))
       <button
         @click="$emit('openCalendar')"
         aria-label="Hijiri Calendar"
-        class="p-1.5 rounded-lg text-muted hover:text-fg hover:bg-white/10 transition-colors"
+        class="p-1.5 rounded-lg text-muted hover:text-fg hover:bg-fg/10 transition-colors"
       >
         <Calendar :size="22" stroke-width="1.5" />
       </button>
@@ -37,7 +37,7 @@ onUnmounted(() => window.removeEventListener('scroll', onScroll))
       <button
         @click="$emit('openSettings')"
         aria-label="Settings"
-        class="p-1.5 rounded-lg text-muted hover:text-fg hover:bg-white/10 transition-colors"
+        class="p-1.5 rounded-lg text-muted hover:text-fg hover:bg-fg/10 transition-colors"
       >
         <Settings :size="22" stroke-width="1.5" />
       </button>

@@ -92,10 +92,11 @@ select option {
 /* Push page content below fixed header */
 .page-content { padding-top: 3.5rem; }
 
-/* In standalone PWA (added to home screen), add safe area on top */
+/* In standalone PWA, header needs internal padding to clear the status bar.
+   #app already applies env(safe-area-inset-top), so page-content does NOT add it again. */
 @media (display-mode: standalone) {
   .app-header-pt { padding-top: calc(env(safe-area-inset-top) + 0.25rem); }
-  .page-content  { padding-top: calc(env(safe-area-inset-top) + 3rem); }
+  .page-content  { padding-top: 3.5rem; }
 }
 
 /* ── Page slide transitions ──────────────────────────────────────────── */
