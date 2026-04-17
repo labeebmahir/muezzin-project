@@ -188,14 +188,14 @@ async function share() {
       <div v-else class="bg-card rounded-xl">
         <!-- Month navigator -->
         <div class="flex items-center justify-between p-4">
-          <button class="p-1.5 rounded-lg text-muted hover:text-fg hover:bg-white/10 transition-colors"" @click="prevMonth">
+          <button class="p-1.5 rounded-lg text-muted hover:text-fg hover:bg-fg/10 transition-colors" @click="prevMonth">
             <ChevronLeft :size="22" stroke-width="1.5" />
           </button>
           <div class="text-center">
             <p class="text-base font-bold text-gold">{{ monthHeader }}</p>
             <p class="text-sm mt-1">{{ gregRange }}</p>
           </div>
-          <button class="p-1.5 rounded-lg text-muted hover:text-fg hover:bg-white/10 transition-colors"" @click="nextMonth">
+          <button class="p-1.5 rounded-lg text-muted hover:text-fg hover:bg-fg/10 transition-colors" @click="nextMonth">
             <ChevronRight :size="22" stroke-width="1.5" />
           </button>
         </div>
@@ -247,7 +247,7 @@ async function share() {
         </div>
 
         <!-- Prayer cards grid -->
-        <div v-if="selPrayers.length" class="grid grid-cols-3 gap-4">
+        <div v-if="selPrayers.length" class="grid grid-cols-3 gap-2">
           <div
             v-for="(p, i) in selPrayers" :key="p.key"
             class="flex flex-col items-center gap-4 py-3.5 px-2 rounded-xl"

@@ -96,7 +96,9 @@ async function allowNotification() {
 
       <!-- Sheet -->
       <Transition name="slide-up" appear>
-        <div class="relative w-full max-w-120 bg-card rounded-t-3xl px-6 pt-8 pb-10 flex flex-col items-center gap-5 text-center">
+        <div class="relative w-full max-w-120 bg-card rounded-t-3xl px-6 pt-8 flex flex-col items-center gap-5 text-center"
+          style="padding-bottom: max(2.5rem, env(safe-area-inset-bottom))"
+        >
 
           <!-- ── Location Permission ── -->
           <template v-if="step === 'location'">

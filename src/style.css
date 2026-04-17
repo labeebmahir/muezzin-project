@@ -50,10 +50,15 @@ body {
   font-family: 'Poppins', ui-sans-serif, system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  min-height: 100vh;
   min-height: 100dvh;
+  overflow-x: hidden;
   overscroll-behavior: none;
   user-select: none;
+  scrollbar-width: none;
 }
+
+body::-webkit-scrollbar { display: none; }
 
 /* Allow text selection only in inputs and textareas */
 input, textarea { user-select: text; }
@@ -64,21 +69,28 @@ button:active, a:active { opacity: 0.7; transform: scale(0.97); transition: opac
 #app {
   max-width: 480px;
   margin: 0 auto;
+  min-height: 100vh;
   min-height: 100dvh;
   position: relative;
   overflow-x: hidden;
   /* PWA status bar safe area */
   padding-top: env(safe-area-inset-top);
   padding-bottom: env(safe-area-inset-bottom);
-  /* Smooth momentum scrolling on iOS */
-  -webkit-overflow-scrolling: touch;
 }
 
 
-/* Text size scale — zoom scales all children including fixed px values */
+/* Text size scale — zoom works on Chrome; font-size on html is the Safari fallback */
 [data-text-size="normal"] { zoom: 1; }
 [data-text-size="large"]  { zoom: 1.125; }
 [data-text-size="xlarge"] { zoom: 1.25; }
+
+/* Slide transitions min-height fallback */
+.slide-forward-enter-active,
+.slide-forward-leave-active,
+.slide-back-enter-active,
+.slide-back-leave-active {
+  min-height: 100vh;
+}
 
 /* Select option theming */
 select option {

@@ -20,8 +20,8 @@ import { PRAYER_NAMES } from './constants/prayerNames.js'
 const subView = ref('home') // 'home' | 'calendar' | 'settings' | 'location'
 const pageTx  = ref('slide-forward')
 
-function goTo(view) { pageTx.value = 'slide-forward'; subView.value = view }
-function goBack()   { pageTx.value = 'slide-back';    subView.value = 'home' }
+function goTo(view) { window.scrollTo(0, 0); pageTx.value = 'slide-forward'; subView.value = view }
+function goBack()   { window.scrollTo(0, 0); pageTx.value = 'slide-back';    subView.value = 'home' }
 
 // ── Core composables ───────────────────────────────────────────────────────
 
@@ -108,7 +108,10 @@ function applyTheme() {
 }
 
 function applyTextSize() {
-  document.getElementById('app')?.setAttribute('data-text-size', settings.textSize ?? 'normal')
+  const size = settings.textSize ?? 'normal'
+  const scaleMap = { normal: '100%', large: '112.5%', xlarge: '125%' }
+  document.documentElement.style.fontSize = scaleMap[size]
+  document.getElementById('app')?.setAttribute('data-text-size', size)
 }
 
 watch(() => settings.darkMode, applyTheme)

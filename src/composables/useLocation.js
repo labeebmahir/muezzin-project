@@ -49,10 +49,12 @@ export function useLocation() {
       navigator.geolocation.getCurrentPosition(
         async (pos) => {
           coords.value = { lat: pos.coords.latitude, lon: pos.coords.longitude }
+          const ctrl = new AbortController()
+          const timer = setTimeout(() => ctrl.abort(), 8000)
           try {
             const res = await fetch(
               `https://nominatim.openstreetmap.org/reverse?lat=${coords.value.lat}&lon=${coords.value.lon}&format=json`,
-              { headers: { 'Accept-Language': 'en' } }
+              { headers: { 'Accept-Language': 'en' }, signal: ctrl.signal }
             )
             const data = await res.json()
             city.value =
@@ -69,6 +71,8 @@ export function useLocation() {
             }
           } catch {
             city.value = 'Unknown'
+          } finally {
+            clearTimeout(timer)
           }
           resolve()
         },

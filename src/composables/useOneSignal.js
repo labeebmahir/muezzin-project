@@ -63,9 +63,10 @@ export async function requestOneSignalPermission() {
 }
 
 export async function tagZone(zone) {
+  if (!zone) return
   try {
-    const OneSignal = window.OneSignal
-    if (!OneSignal || !zone) return
-    await OneSignal.User.addTag('zone', zone)
+    const os = oneSignalInstance ?? window.OneSignal
+    if (!os) return
+    await os.User.addTag('zone', zone)
   } catch {}
 }
